@@ -1,0 +1,165 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+/*
+.status-4 {
+    -fx-background-color:rgba(0,124,0,0.7);
+}
+.status-5 {
+    -fx-background-color:rgba(200,165,18,0.7);
+}
+.status-6 {
+    -fx-background-color:rgba(0,0,170,0.7);
+}
+.status-7 {
+	-fx-background-color:rgba(255,0,255,0.7);
+}
+.status-8 {
+    -fx-background-color:rgba(255,0,0,0.7);
+}
+
+
+
+.status-4 {
+    -fx-background-color:rgba(253,245,66,0.7);
+}
+.status-5 {
+    -fx-background-color:rgba(251,216,8,0.7);
+}
+.status-6 {
+    -fx-background-color:rgba(255,144,5,0.7);
+}
+.status-7 {
+	-fx-background-color:rgba(249,83,11,0.7);
+}
+.status-8 {
+    -fx-background-color:rgba(255,0,0,0.7);
+}
+.status-black {
+    -fx-background-color:rgba(0,0,0,0.7);
+}
+.status-purple {
+    -fx-background-color:rgba(128,0,128,0.7);
+}
+*/
+
+.status-4 {
+    -fx-background-color:rgba(253,225,81,0.9);
+}
+.status-5 {
+    -fx-background-color:rgba(254,188,103,0.9);
+}
+.status-6 {
+    -fx-background-color:rgba(242,141,132,0.9);
+}
+.status-7 {
+	-fx-background-color:rgba(196,108,156,0.9);
+}
+.status-8 {
+    -fx-background-color:rgba(151,103,163,0.9);
+}
+.status-black {
+    -fx-background-color:rgba(0,0,0,1);
+}
+.status-purple {
+    -fx-background-color:rgba(128,0,128,0.9);
+}
+
+
+
+.mystyleclass{
+    -fx-background-color: green;
+}
+.status-red {
+    -fx-background-color:rgba(128,0,0,0.7);
+}
+.status-green {
+    -fx-background-color:rgba(0,128,0,0.7);
+}
+.status-blue {
+    -fx-background-color:rgba(0,20,128,0.7);
+}
+.chart-vertical-zero-line{
+    -fx-stroke: black;
+    -fx-stroke-width: 2px;
+}
+.chart-horizontal-zero-line{
+    -fx-stroke: black;
+    -fx-stroke-width: 2px;
+}
+.axis-tick-mark{
+	-fx-stroke: black;
+	 -fx-stroke-width: 1.5px;
+}
+.chart-vertical-grid-lines {
+    -fx-stroke: black;
+}
+
+.chart-legend{
+	-fx-background-color:  grey;
+}
+.default-color1.chart-symbol {
+-fx-background-color:  Red;
+ -fx-stroke:  #f9d900;
+    -fx-background-radius: 1px;
+
+    -fx-shape: "M2,0 L5,4 L8,0 L10,0 L10,2 L6,5 L10,8 L10,10 L8,10 L5,6 L2,10 L0,10 L0,8 L4,5 L0,2 L0,0 Z";
+}
+.default-color0.chart-symbol {
+ -fx-stroke: #00cc33;
+    -fx-background-radius: 7px;
+}
+
+.default-color0.chart-symbol { /* hollow circle */
+    -fx-background-color: #860061, white;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 15px;
+    -fx-padding: 5px;
+}
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #dddddd;
+}
+
+.tab-pane
+{
+    -fx-tab-min-width:90px;
+}
+
+.tab{
+    -fx-background-insets: 0 1 0 1,0,0;
+}
+.tab-pane .tab
+{
+    -fx-background-color: #bbbbbb;
+
+}
+
+.tab-pane .tab:selected
+{
+    -fx-background-color: #3c3c3c;
+}
+
+.tab .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #111111;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.tab:selected .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #96b946;
+}
+
+.tab-pane:top *.tab-header-area {
+    -fx-background-insets: 0, 0 0 1 0;
+ /* -fx-padding: 0.416667em 0.166667em 0.0em 0.833em; /* 5 2 0 10 */
+    -fx-padding: 0.416667em 0.166667em 0.0em 0.0em; /* overridden as 5 2 0 0 */
+}
+
+.toggle-button {
+    -fx-background-color: green;
+}
+
+.toggle-button:selected {
+    -fx-background-color: red;
+}

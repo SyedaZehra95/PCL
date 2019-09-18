@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="src/jars/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="src/jars/commons-collections4-4.1.jar"/>
+	<classpathentry kind="lib" path="src/jars/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="src/jars/curvesapi-1.04.jar"/>
+	<classpathentry kind="lib" path="src/jars/fxgraphics2d-1.3.jar"/>
+	<classpathentry kind="lib" path="src/jars/google-guava.jar"/>
+	<classpathentry kind="lib" path="src/jars/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="src/jars/java-string-similarity-1.1.0.jar"/>
+	<classpathentry kind="lib" path="src/jars/jfreesvg-3.0.jar"/>
+	<classpathentry kind="lib" path="src/jars/jlatexmath-1.0.2.jar"/>
+	<classpathentry kind="lib" path="src/jars/joda-time-2.10.2.jar"/>
+	<classpathentry kind="lib" path="src/jars/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="src/jars/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="src/jars/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="src/jars/orsoncharts-1.5-swing-demo.jar"/>
+	<classpathentry kind="lib" path="src/jars/orsoncharts-1.5.jar"/>
+	<classpathentry kind="lib" path="src/jars/orsonpdf-1.7.jar"/>
+	<classpathentry kind="lib" path="src/jars/poi-3.17.jar"/>
+	<classpathentry kind="lib" path="src/jars/poi-examples-3.17.jar"/>
+	<classpathentry kind="lib" path="src/jars/poi-excelant-3.17.jar"/>
+	<classpathentry kind="lib" path="src/jars/poi-ooxml-3.17.jar"/>
+	<classpathentry kind="lib" path="src/jars/poi-ooxml-schemas-3.17.jar"/>
+	<classpathentry kind="lib" path="src/jars/poi-scratchpad-3.17.jar"/>
+	<classpathentry kind="lib" path="src/jars/xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
