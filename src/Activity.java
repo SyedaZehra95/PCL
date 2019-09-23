@@ -10,6 +10,7 @@ import javafx.scene.control.Alert.AlertType;
 public class Activity {
 	private int id;
 	private String name;
+	private String systemId;
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private LocalDate deactivationDate;
@@ -18,6 +19,8 @@ public class Activity {
 	private int numberOfResources;
 	private double durationInDays = -1;
 	private double ratioOfLastDayUsed = -1;
+	private int maxHoursPossible = -1;
+	private int lowestRMinPossible = -1;
 	private ArrayList<WorkPackage> workPackages = new ArrayList<>();
 
 	public void addWorkPackage(WorkPackage wp) {
@@ -47,83 +50,94 @@ public class Activity {
 		if (ActivityData.isAborted()) {
 			return;
 		}
+
 		this.id = id;
+
+		int maxHours = ActivityData.getActivity(id).getMaxHoursPossible();
 		int maxDays = 0;
+		if (maxHours == -1) {
 
-		LocalDate currentDate = ActivityData.getActivity(id).getStartDate();
-		LocalDate endDate = ActivityData.getActivity(id).getEndDate();
-		if (currentDate.isBefore(endDate)) {
-			while (currentDate.isBefore(endDate)) {
-				int dayOfWeek = currentDate.getDayOfWeek();
-				if (dayOfWeek <= ActivityData.getNumberOfDaysPerWeek()) {
-					maxDays++;
+			LocalDate currentDate = ActivityData.getActivity(id).getStartDate();
+			LocalDate endDate = ActivityData.getActivity(id).getEndDate();
+			if (currentDate.isBefore(endDate)) {
+				while (currentDate.isBefore(endDate)) {
+					int dayOfWeek = currentDate.getDayOfWeek();
+					if (dayOfWeek <= ActivityData.getNumberOfDaysPerWeek()) {
+						maxDays++;
+					}
+					currentDate = currentDate.plusDays(1);
 				}
-				currentDate = currentDate.plusDays(1);
 			}
-		}
-		if (maxDays < 1) {
-			System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
-					+ ": Activity start date is after T max: " + ActivityData.getActivity(id).getEndDate());
-			Platform.runLater(new Runnable() {
+			if (maxDays < 1) {
+				System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
+						+ ": Activity start date is after T max: " + ActivityData.getActivity(id).getEndDate());
+				Platform.runLater(new Runnable() {
 
-				@Override
-				public void run() {
-					Alert alert = new Alert(AlertType.ERROR);
-					alert.setTitle("Error");
-					alert.setHeaderText("Error 1 in activity id: " + id);
-					alert.setContentText("Error in activity " + ActivityData.getActivity(id).getName()
-							+ ": Activity start date: " + ActivityData.getActivity(id).getStartDate()
-							+ " is after T max: " + ActivityData.getActivity(id).getEndDate());
-					alert.showAndWait();
-				}
-			});
-			ActivityData.setAborted(true);
-		}
-		int maxHours = ActivityData.workingHoursPerDay() * maxDays;
-
-		if ((maxHours * ActivityData.RMax()) < ActivityData.getActivity(id).getManHours()) {
-			System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
-					+ ": Activity start date is after T max: " + ActivityData.getActivity(id).getEndDate());
-			Platform.runLater(new Runnable() {
-
-				@Override
-				public void run() {
-					Alert alert = new Alert(AlertType.ERROR);
-					alert.setTitle("No solution possible");
-					alert.setHeaderText("Error 1 in package id: " + id);
-					alert.setContentText("Error in package " + ActivityData.getActivity(id).getName()
-							+ ": No solution possible with given Rmax value.");
-					alert.showAndWait();
-				}
-			});
-			ActivityData.setAborted(true);
-		}
-		int Rmin = (int) Math.ceil(ActivityData.getActivity(id).getManHours() / (double) (maxHours));
-		if (Rmin > ActivityData.RMax()) {
-			this.numberOfResources = ActivityData.RMax();
-			System.out.println(
-					"Error in activity " + ActivityData.getActivity(id).getName() + ": Value of Tmax is too low.");
-			Platform.runLater(new Runnable() {
-
-				@Override
-				public void run() {
-					Alert alert = new Alert(AlertType.ERROR);
-					alert.setTitle("No solution possible");
-					alert.setHeaderText("Error 1 in package id: " + id);
-					alert.setContentText("Error in package " + ActivityData.getActivity(id).getName()
-							+ ": No solution possible with given Rmax value.");
-					alert.showAndWait();
-				}
-			});
-			ActivityData.setAborted(true);
-		} else {
-			if (ActivityData.RMin() > Rmin) {
-				Rmin = ActivityData.RMin();
+					@Override
+					public void run() {
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setTitle("Error");
+						alert.setHeaderText("Error 1 in activity id: " + id);
+						alert.setContentText("Error in activity " + ActivityData.getActivity(id).getName()
+								+ ": Activity start date: " + ActivityData.getActivity(id).getStartDate()
+								+ " is after T max: " + ActivityData.getActivity(id).getEndDate());
+						alert.showAndWait();
+					}
+				});
+				ActivityData.setAborted(true);
 			}
-			this.numberOfResources = ThreadLocalRandom.current().nextInt(Rmin, ActivityData.RMax() + 1);
+			maxHours = ActivityData.workingHoursPerDay() * maxDays;
+
+			if ((maxHours * ActivityData.RMax()) < ActivityData.getActivity(id).getManHours()) {
+				System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
+						+ ": Activity start date is after T max: " + ActivityData.getActivity(id).getEndDate());
+				Platform.runLater(new Runnable() {
+
+					@Override
+					public void run() {
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setTitle("No solution possible");
+						alert.setHeaderText("Error 1 in package id: " + id);
+						alert.setContentText("Error in package " + ActivityData.getActivity(id).getName()
+								+ ": No solution possible with given Rmax value.");
+						alert.showAndWait();
+					}
+				});
+				ActivityData.setAborted(true);
+			}
+			ActivityData.getActivity(id).setMaxHoursPossible(maxHours);
+		}
+		int Rmin = ActivityData.getActivity(id).getLowestRMinPossible();
+		if (Rmin == -1) {
+			Rmin = (int) Math.ceil(ActivityData.getActivity(id).getManHours() / (double) (maxHours));
+			if (Rmin > ActivityData.RMax()) {
+				this.numberOfResources = ActivityData.RMax();
+				System.out.println(
+						"Error in activity " + ActivityData.getActivity(id).getName() + ": Value of Tmax is too low.");
+				Platform.runLater(new Runnable() {
+
+					@Override
+					public void run() {
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setTitle("No solution possible");
+						alert.setHeaderText("Error 1 in package id: " + id);
+						alert.setContentText("Error in package " + ActivityData.getActivity(id).getName()
+								+ ": No solution possible with given Rmax value.");
+						alert.showAndWait();
+					}
+				});
+				ActivityData.setAborted(true);
+			} else {
+				if (ActivityData.RMin() > Rmin) {
+					Rmin = ActivityData.RMin();
+				}
+			}
+			ActivityData.getActivity(id).setLowestRMinPossible(Rmin);
 		}
 
+		this.numberOfResources = ThreadLocalRandom.current().nextInt(Rmin, ActivityData.RMax() + 1);
 		this.activationDate = generateRandomT(maxHours);
+		generateRandomT(maxHours);
 	}
 
 	private LocalDate generateRandomT(int maxHours) {
@@ -142,7 +156,7 @@ public class Activity {
 				if (date.getDayOfWeek() > ActivityData.getNumberOfDaysPerWeek()) {
 					nonWorkingDays++;
 				}
-				date.plusDays(1);
+				date = date.plusDays(1);
 				days--;
 			}
 		}
@@ -256,5 +270,32 @@ public class Activity {
 			this.endDate = ActivityData.getActivity(this.id()).getEndDate();
 		}
 		return this.endDate;
+	}
+
+	public int getMaxHoursPossible() {
+		return maxHoursPossible;
+	}
+
+	public void setMaxHoursPossible(int maxHoursPossible) {
+		this.maxHoursPossible = maxHoursPossible;
+	}
+
+	public int getLowestRMinPossible() {
+		return lowestRMinPossible;
+	}
+
+	public void setLowestRMinPossible(int lowestRMinPossible) {
+		this.lowestRMinPossible = lowestRMinPossible;
+	}
+
+	public String getSystemId() {
+		if (systemId == null) {
+			systemId = ActivityData.getActivity(id).getSystemId();
+		}
+		return systemId;
+	}
+
+	public void setSystemId(String systemId) {
+		this.systemId = systemId;
 	}
 }

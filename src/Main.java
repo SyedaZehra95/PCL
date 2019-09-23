@@ -11,8 +11,11 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -25,9 +28,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 public class Main extends Application {
 
@@ -41,17 +41,15 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		AnchorPane root = new AnchorPane();
-		Scene scene = new Scene(root, 1280, 720);
+		Scene scene = new Scene(root, 100, 100);
 		scene.getStylesheets().add("style.css");
 		primaryStage.setScene(scene);
-//		primaryStage.setMaximized(true);
+		primaryStage.setMaximized(true);
 		primaryStage.show();
 
 		VBox main_vBox = new VBox();
 		main_vBox.prefWidthProperty().bind(root.widthProperty());
 		main_vBox.prefHeightProperty().bind(root.heightProperty());
-//		main_vBox.setPadding(new Insets(10, 10, 10, 10));
-//		main_vBox.setSpacing(10);
 
 		Button buttonSelectDataset = new Button("Select Dataset");
 		buttonSelectDataset.setId("btn-white");
@@ -106,28 +104,26 @@ public class Main extends Application {
 
 		TextArea tArea = new TextArea();
 		tArea.setText("");
-		tArea.setMinHeight(300)
-		;
+		tArea.setMinHeight(300);
 		TableView tableView = new TableView();
-        TableColumn<String, Progress> column1 = new TableColumn<>("Generation");
-        column1.setCellValueFactory(new PropertyValueFactory<>("index"));
-        TableColumn<String, Progress> column2 = new TableColumn<>("Max Work Penalty");
-        column2.setCellValueFactory(new PropertyValueFactory<>("MaxWorkPenalty"));
-        TableColumn<String, Progress> column3 = new TableColumn<>("Last Work Week");
-        column3.setCellValueFactory(new PropertyValueFactory<>("LastWorkWeek"));
-        TableColumn<String, Progress> column4 = new TableColumn<>("Late Start Penalty");
-        column4.setCellValueFactory(new PropertyValueFactory<>("LateStartPenalty"));
-        tableView.resize(100, 100);
-        tableView.getColumns().add(column1);
-        tableView.getColumns().add(column2);
-        tableView.getColumns().add(column3);
-        tableView.getColumns().add(column4);
-       
+		TableColumn<String, Progress> column1 = new TableColumn<>("Generation");
+		column1.setCellValueFactory(new PropertyValueFactory<>("index"));
+		TableColumn<String, Progress> column2 = new TableColumn<>("Max Work Penalty");
+		column2.setCellValueFactory(new PropertyValueFactory<>("MaxWorkPenalty"));
+		TableColumn<String, Progress> column3 = new TableColumn<>("Last Work Week");
+		column3.setCellValueFactory(new PropertyValueFactory<>("LastWorkWeek"));
+		TableColumn<String, Progress> column4 = new TableColumn<>("Late Start Penalty");
+		column4.setCellValueFactory(new PropertyValueFactory<>("LateStartPenalty"));
+		tableView.resize(100, 100);
+		tableView.getColumns().add(column1);
+		tableView.getColumns().add(column2);
+		tableView.getColumns().add(column3);
+		tableView.getColumns().add(column4);
 
 		TextField resourceVariationLimitTextField = new TextField("10");
 		TextField workingHoursTextField = new TextField("10");
-		TextField RMaxTextField = new TextField("8");
-		TextField RMinTextField = new TextField("4");
+		TextField RMaxTextField = new TextField("80");
+		TextField RMinTextField = new TextField("1");
 		TextField workingDaysPerWeekTextField = new TextField("5");
 		TextField accuracyTextField = new TextField("1");
 
@@ -137,9 +133,6 @@ public class Main extends Application {
 		labelFileName.setPadding(new Insets(0, 10, 0, 10));
 
 		hbSelectButton.getChildren().add(labelFileName);
-//		hbLabelFileName.setPadding(new Insets(0, 10, 0, 10));
-//		hbLabelFileName.setBackground(new Background(new BackgroundFill(Color.KHAKI, CornerRadii.EMPTY, Insets.EMPTY)));
-//		main_vBox.getChildren().add(1, hbLabelFileName);
 		GridPane grid_config = new GridPane();
 
 		int position = 0;
@@ -237,32 +230,27 @@ public class Main extends Application {
 		}
 		ActivityData.reset();
 	}
-	
-	public static void autoResizeColumns( TableView<?> table )
-	{
-	    //Set the right policy
-	    table.setColumnResizePolicy( TableView.UNCONSTRAINED_RESIZE_POLICY);
-	    table.getColumns().stream().forEach( (column) ->
-	    {
-	        //Minimal width = column header
-	        Text t = new Text( column.getText() );
-	        double max = t.getLayoutBounds().getWidth();
-	        for ( int i = 0; i < table.getItems().size(); i++ )
-	        {
-	            //cell must not be empty
-	            if ( column.getCellData( i ) != null )
-	            {
-	                t = new Text( column.getCellData( i ).toString() );
-	                double calcwidth = t.getLayoutBounds().getWidth();
-	                //remember new max-width
-	                if ( calcwidth > max )
-	                {
-	                    max = calcwidth;
-	                }
-	            }
-	        }
-	        //set the new max-width with some extra space
-	        column.setPrefWidth( max + 10.0d );
-	    } );
+
+	public static void autoResizeColumns(TableView<?> table) {
+		// Set the right policy
+		table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+		table.getColumns().stream().forEach((column) -> {
+			// Minimal width = column header
+			Text t = new Text(column.getText());
+			double max = t.getLayoutBounds().getWidth();
+			for (int i = 0; i < table.getItems().size(); i++) {
+				// cell must not be empty
+				if (column.getCellData(i) != null) {
+					t = new Text(column.getCellData(i).toString());
+					double calcwidth = t.getLayoutBounds().getWidth();
+					// remember new max-width
+					if (calcwidth > max) {
+						max = calcwidth;
+					}
+				}
+			}
+			// set the new max-width with some extra space
+			column.setPrefWidth(max + 10.0d);
+		});
 	}
 }

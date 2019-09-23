@@ -4,7 +4,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -19,7 +18,7 @@ public class Algorithm {
 	private final boolean DEBUG = false;
 
 	public Population autoRun(TableView tableView, VBox main_vBox, HBox topHBox) {
-		//debugTextArea.appendText("Algorithm progress: \n\n");
+		// debugTextArea.appendText("Algorithm progress: \n\n");
 		populationSize = ActivityData.size() * 1;
 		int sampleSize = 10;
 		if (objectiveId == 100) {
@@ -35,7 +34,7 @@ public class Algorithm {
 					ArrayList<Individual> fitIndividuals = ranking.getSubfront(0);
 					if (ActivityData.isAborted()) {
 						tableView.setPlaceholder(new Label("No Solution"));
-						//debugTextArea.appendText("\n\nNo solution.\n\n");
+						// debugTextArea.appendText("\n\nNo solution.\n\n");
 						return null;
 					}
 					fittestIndividuals.addAll(fitIndividuals);
@@ -49,9 +48,10 @@ public class Algorithm {
 				Population unionPopulation = new Population(populationSize, false);
 
 				int[] _fitness = population.getIndividual(0).getFitness();
-				tableView.getItems().add(new Progress(0,_fitness[1],_fitness[0],_fitness[2]));
-				//debugTextArea.appendText(0 + ": Max workers + Penalty: " + _fitness[1] + ", Last work week: "
-						//+ _fitness[0] + ", Late start penalty: " + _fitness[2] + ".\n");
+				tableView.getItems().add(new Progress(0, _fitness[1], _fitness[0], _fitness[2]));
+				// debugTextArea.appendText(0 + ": Max workers + Penalty: " + _fitness[1] + ",
+				// Last work week: "
+				// + _fitness[0] + ", Late start penalty: " + _fitness[2] + ".\n");
 				int sameFitnessCount = 0;
 				int gen = 1;
 				while (true) {
@@ -60,7 +60,7 @@ public class Algorithm {
 					}
 					if (sameFitnessCount > 1) {
 						tableView.setPlaceholder(new Label("Done"));
-						//debugTextArea.appendText("\nDone!\n");
+						// debugTextArea.appendText("\nDone!\n");
 						break;
 					}
 
@@ -71,20 +71,14 @@ public class Algorithm {
 					population = newPopAfterRanking(unionPopulation);
 
 					if (gen % ActivityData.getAccuracyThreshold() == 0) {
-//						final Population pop = population;
-//						Platform.runLater(new Runnable() {
-//
-//							@Override
-//							public void run() {
-//								pop.visualize(topHBox, main_vBox);
-//							}
-//						});
 						int[] currentFitness = { population.getFittest(0).getFitness()[0],
 								population.getFittest(1).getFitness()[1], population.getFittest(2).getFitness()[2] };
-						tableView.getItems().add(new Progress(gen,currentFitness[1],currentFitness[0],currentFitness[2]));
-						//debugTextArea
-								//.appendText(gen + ": Max workers + Penalty: " + currentFitness[1] + ", Last work week: "
-										//+ currentFitness[0] + ", Late start penalty: " + currentFitness[2] + ".\n");
+						tableView.getItems()
+								.add(new Progress(gen, currentFitness[1], currentFitness[0], currentFitness[2]));
+						// debugTextArea
+						// .appendText(gen + ": Max workers + Penalty: " + currentFitness[1] + ", Last
+						// work week: "
+						// + currentFitness[0] + ", Late start penalty: " + currentFitness[2] + ".\n");
 
 						if (_fitness[0] == currentFitness[0] && _fitness[1] == currentFitness[1]
 								&& _fitness[2] == currentFitness[2]) {
@@ -289,6 +283,5 @@ public class Algorithm {
 	public int getObjectiveId() {
 		return objectiveId;
 	}
-	
-	
+
 }
