@@ -31,7 +31,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-	private boolean autoSelectFile = true;
+	private boolean autoSelectFile = false;
 	private final String FILE_NAME = "data10.xlsx";
 
 	public static void main(String[] args) {
@@ -115,6 +115,7 @@ public class Main extends Application {
 		TableColumn<String, Progress> column4 = new TableColumn<>("Late Start Penalty");
 		column4.setCellValueFactory(new PropertyValueFactory<>("LateStartPenalty"));
 		tableView.resize(100, 100);
+		tableView.setMinHeight(400);
 		tableView.getColumns().add(column1);
 		tableView.getColumns().add(column2);
 		tableView.getColumns().add(column3);
@@ -125,7 +126,7 @@ public class Main extends Application {
 		TextField RMaxTextField = new TextField("80");
 		TextField RMinTextField = new TextField("1");
 		TextField workingDaysPerWeekTextField = new TextField("5");
-		TextField accuracyTextField = new TextField("1");
+		TextField accuracyTextField = new TextField("100");
 
 		Label labelFileName = new Label(file.getName() + " ✓");
 		labelFileName.setTextFill(Color.web("#ffffff"));
