@@ -32,7 +32,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 public class Main extends Application {
 
 	private boolean autoSelectFile = true;
-	private final String FILE_NAME = "data10.xlsx";
+	private final String FILE_NAME = "data9.xlsx";
 
 	public static void main(String[] args) {
 		launch(args);
@@ -101,6 +101,7 @@ public class Main extends Application {
 
 	protected void fileSelected(File file, VBox main_vBox, HBox hbSelectButton) {
 		HBox topHBox = new HBox();
+		Stage stage=new Stage();
 		topHBox.prefWidthProperty().bind(main_vBox.widthProperty());
 		topHBox.setPadding(new Insets(10, 10, 10, 10));
 
@@ -108,21 +109,31 @@ public class Main extends Application {
 		tArea.setText("");
 		tArea.setMinHeight(300)
 		;
-		TableView tableView = new TableView();
-        TableColumn<String, Progress> column1 = new TableColumn<>("Generation");
+		TableView<Progress> tableView = new TableView<Progress>();
+		
+		tableView.setMinHeight(300.5);
+	    tableView.setMinWidth(435);
+	    tableView.setMaxWidth(435);
+        TableColumn<Progress,String> column1 = new TableColumn<Progress,String>("Generation");
         column1.setCellValueFactory(new PropertyValueFactory<>("index"));
-        TableColumn<String, Progress> column2 = new TableColumn<>("Max Work Penalty");
+        TableColumn<Progress,String> column2 = new TableColumn<Progress,String>("Max Work  \nPenalty");
         column2.setCellValueFactory(new PropertyValueFactory<>("MaxWorkPenalty"));
-        TableColumn<String, Progress> column3 = new TableColumn<>("Last Work Week");
+        TableColumn<Progress,String> column3 = new TableColumn<Progress,String>("Last Work 	\nWeek");
         column3.setCellValueFactory(new PropertyValueFactory<>("LastWorkWeek"));
-        TableColumn<String, Progress> column4 = new TableColumn<>("Late Start Penalty");
+        TableColumn<Progress,String> column4 = new TableColumn<Progress,String>("Late Start 	\nPenalty");
         column4.setCellValueFactory(new PropertyValueFactory<>("LateStartPenalty"));
-        tableView.resize(100, 100);
+        
         tableView.getColumns().add(column1);
         tableView.getColumns().add(column2);
         tableView.getColumns().add(column3);
         tableView.getColumns().add(column4);
-       
+        
+		
+		
+		
+        //tableView.prefHeightProperty().bind(stage.heightProperty());
+        //tableView.prefWidthProperty().bind(stage.widthProperty());
+        //tableView.resize(100, 100);
 
 		TextField resourceVariationLimitTextField = new TextField("10");
 		TextField workingHoursTextField = new TextField("10");
@@ -178,6 +189,8 @@ public class Main extends Application {
 				new Thread(() -> {
 					Algorithm algorithm = new Algorithm();
 					Population resultPopulation = algorithm.autoRun(tableView, main_vBox, topHBox);
+					System.out.println(main_vBox);
+					System.out.println(topHBox);
 					if (!ActivityData.isAborted()) {
 						Platform.runLater(new Runnable() {
 
@@ -222,10 +235,13 @@ public class Main extends Application {
 		hbButton.setPadding(new Insets(10, 0, 0, 0));
 		grid_config.add(hbButton, 1, position);
 		position++;
+		System.out.println(position);
 		autoResizeColumns(tableView);
 		VBox tableArea = new VBox(tableView);
+		
 		tableArea.setPadding(new Insets(10, 0, 0, 0));
 		grid_config.add(tableArea, 0, position, 2, 1);
+		//grid_config.add(vbox, 0, position, 2, 1);
 		position++;
 		topHBox.getChildren().add(grid_config);
 		main_vBox.getChildren().add(topHBox);

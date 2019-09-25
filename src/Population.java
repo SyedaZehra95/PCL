@@ -64,13 +64,13 @@ public class Population {
 	}
 
 	public void visualize(HBox topHBox, VBox main_vBox) {
-		while (topHBox.getChildren().size() > 1) {
+		/*while (topHBox.getChildren().size() > 1) {
 			topHBox.getChildren().remove(1);
 		}
 
 		while (main_vBox.getChildren().size() > 2) {
 			main_vBox.getChildren().remove(2);
-		}
+		}*/
 
 //		int fittestDuration = this.getFittest(0).getFitness()[0];
 //		ArrayList<Integer> durations = new ArrayList<>();
@@ -85,7 +85,7 @@ public class Population {
 //		for (int i = 0; i < durations.size(); i++) {
 //			chartDurations[i] = durations.get(i);
 //		}
-
+		
 //		topTilePane.getChildren().add(createScatterPlot(main_vBox, topTilePane));
 		VBox vBox = new VBox(createScatterPlot3D(main_vBox, topHBox));
 
@@ -99,6 +99,7 @@ public class Population {
 		slider1.setBlockIncrement(1);
 
 		vBox.getChildren().addAll(label1, slider1);
+		vBox.setPadding(new Insets(0, 0, 10, 20));
 		topHBox.getChildren().add(vBox);
 
 //		topTilePane.getChildren().add(createScatterPlot(main_vBox, topTilePane, new int[] { durations.get(0) }));
@@ -113,6 +114,7 @@ public class Population {
 
 	@SuppressWarnings("unchecked")
 	private Chart3DViewer createScatterPlot3D(VBox main_vBox, HBox topTilePane) {
+		
 		Scatter3DChart sChart = new Scatter3DChart();
 		sChart.run(this);
 		Chart3DViewer v = new Chart3DViewer(sChart.getChart());

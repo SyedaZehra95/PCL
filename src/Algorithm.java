@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javafx.application.Platform;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -20,6 +23,17 @@ public class Algorithm {
 
 	public Population autoRun(TableView tableView, VBox main_vBox, HBox topHBox) {
 		//debugTextArea.appendText("Algorithm progress: \n\n");
+		//XYChart.Series series = new XYChart.Series();
+		VBox vBox=new VBox(5);
+		LineCharts lineCharts1=new LineCharts("Max work 	\n penalty");
+		LineChart lineChart1=lineCharts1.run(main_vBox,topHBox,vBox);
+		LineCharts lineCharts2=new LineCharts("Man hours 	\n per week");
+		LineChart lineChart2=lineCharts2.run(main_vBox,topHBox,vBox);
+		LineCharts lineCharts3=new LineCharts("Last Start	\n Penalty");
+		LineChart lineChart3=lineCharts3.run(main_vBox,topHBox,vBox);
+		
+		
+		tableView.getItems().clear();
 		populationSize = ActivityData.size() * 1;
 		int sampleSize = 10;
 		if (objectiveId == 100) {
@@ -49,7 +63,16 @@ public class Algorithm {
 				Population unionPopulation = new Population(populationSize, false);
 
 				int[] _fitness = population.getIndividual(0).getFitness();
-				tableView.getItems().add(new Progress(0,_fitness[1],_fitness[0],_fitness[2]));
+//				tableView.getItems().add(new Progress(0,_fitness[1],_fitness[0],_fitness[2]));
+				final int[] __fitness = population.getIndividual(0).getFitness();
+//				Platform.runLater(() -> {
+//					/*series.getData().add(new XYChart.Data(i, currentFitness[1]));
+//					System.out.println(series.getData());
+//					lineChart.getData().add(series);*/
+//					lineCharts1.addSeries(0, __fitness[0]);
+//					lineCharts2.addSeries(0, __fitness[1]);
+//					lineCharts3.addSeries(0, __fitness[2]);
+//				});
 				//debugTextArea.appendText(0 + ": Max workers + Penalty: " + _fitness[1] + ", Last work week: "
 						//+ _fitness[0] + ", Late start penalty: " + _fitness[2] + ".\n");
 				int sameFitnessCount = 0;
@@ -81,7 +104,18 @@ public class Algorithm {
 //						});
 						int[] currentFitness = { population.getFittest(0).getFitness()[0],
 								population.getFittest(1).getFitness()[1], population.getFittest(2).getFitness()[2] };
-						tableView.getItems().add(new Progress(gen,currentFitness[1],currentFitness[0],currentFitness[2]));
+						final Individual ind = population.getFittest(2);
+						tableView.scrollTo(tableView.getItems().size()-1);
+						tableView.getItems().add(new Progress(gen,currentFitness[1],currentFitness[0], (int) ind.getWeightedAverageLateStartDays()));
+						int i=gen;
+						Platform.runLater(() -> {
+							/*series.getData().add(new XYChart.Data(i, currentFitness[1]));
+							System.out.println(series.getData());
+							lineChart.getData().add(series);*/
+							lineCharts1.addSeries(i, currentFitness[0]);
+							lineCharts2.addSeries(i, currentFitness[1]);
+							lineCharts3.addSeries(i, (int) ind.getWeightedAverageLateStartDays());
+						});
 						//debugTextArea
 								//.appendText(gen + ": Max workers + Penalty: " + currentFitness[1] + ", Last work week: "
 										//+ currentFitness[0] + ", Late start penalty: " + currentFitness[2] + ".\n");
