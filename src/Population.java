@@ -65,7 +65,17 @@ public class Population {
 	}
 
 	public void visualize(HBox topHBox, VBox main_vBox) {
-		/**/
+		while (main_vBox.getChildren().size() > 2) {
+			main_vBox.getChildren().remove(2);
+		}
+		/*
+		while (topHBox.getChildren().size() > 1) {
+			topHBox.getChildren().remove(1);
+		}
+
+		while (main_vBox.getChildren().size() > 2) {
+			main_vBox.getChildren().remove(2);
+		}*/
 
 //		int fittestDuration = this.getFittest(0).getFitness()[0];
 //		ArrayList<Integer> durations = new ArrayList<>();
@@ -104,7 +114,6 @@ public class Population {
 			vBox.getChildren().add(0, createScatterPlot3D(main_vBox, topHBox));
 		});
 		vBox.setMinHeight(400.0);
-		vBox.requestFocus();
 		vBox.getChildren().add(0, createScatterPlot3D(main_vBox, topHBox));
 		vBox.getChildren().add(1, label1);
 		vBox.getChildren().add(2, slider1);

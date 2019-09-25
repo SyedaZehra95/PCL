@@ -32,7 +32,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	private boolean autoSelectFile = true;
-	private final String FILE_NAME = "data9.xlsx";
+	private final String FILE_NAME = "data10.xlsx";
 
 	public static void main(String[] args) {
 		launch(args);
@@ -119,7 +119,7 @@ public class Main extends Application {
         column2.setCellValueFactory(new PropertyValueFactory<>("ManHours"));
         TableColumn<Progress,String> column3 = new TableColumn<Progress,String>("Penalty");
         column3.setCellValueFactory(new PropertyValueFactory<>("Penalty"));
-        TableColumn<Progress,String> column4 = new TableColumn<Progress,String>("End Week");
+        TableColumn<Progress,String> column4 = new TableColumn<Progress,String>("Last Week");
         column4.setCellValueFactory(new PropertyValueFactory<>("EndWeek"));
         TableColumn<Progress,String> column5 = new TableColumn<Progress,String>("Average No. Of Days from T-start");
         column5.setCellValueFactory(new PropertyValueFactory<>("AvgFromStart"));

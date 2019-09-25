@@ -22,19 +22,18 @@ public class Algorithm {
 	
 
 	public Population autoRun(TableView tableView, VBox main_vBox, HBox topHBox) {
-		//debugTextArea.appendText("Algorithm progress: \n\n");
-		//XYChart.Series series = new XYChart.Series();
-		while (topHBox.getChildren().size() > 1) {
-			topHBox.getChildren().remove(1);
-		}
-
-		while (main_vBox.getChildren().size() > 2) {
-			main_vBox.getChildren().remove(2);
-		}
+		 if(topHBox.getChildren().size() > 1) {
+				Platform.runLater(()->{
+					 while (topHBox.getChildren().size() > 1) {
+					topHBox.getChildren().remove(1);
+					
+					 }
+				});
+			}
 		VBox vBox=new VBox(5);
 		LineCharts lineCharts1=new LineCharts("Man-Hours Per Week");
 		LineChart lineChart1=lineCharts1.run(main_vBox,topHBox,vBox);
-		LineCharts lineCharts2=new LineCharts("End week");
+		LineCharts lineCharts2=new LineCharts("Last week");
 		LineChart lineChart2=lineCharts2.run(main_vBox,topHBox,vBox);
 		LineCharts lineCharts3=new LineCharts("Average No. of Days from T-Start");
 		LineChart lineChart3=lineCharts3.run(main_vBox,topHBox,vBox);
@@ -72,16 +71,6 @@ public class Algorithm {
 				int[] _fitness = population.getIndividual(0).getFitness();
 //				tableView.getItems().add(new Progress(0,_fitness[1],_fitness[0],_fitness[2]));
 				final int[] __fitness = population.getIndividual(0).getFitness();
-//				Platform.runLater(() -> {
-//					/*series.getData().add(new XYChart.Data(i, currentFitness[1]));
-//					System.out.println(series.getData());
-//					lineChart.getData().add(series);*/
-//					lineCharts1.addSeries(0, __fitness[0]);
-//					lineCharts2.addSeries(0, __fitness[1]);
-//					lineCharts3.addSeries(0, __fitness[2]);
-//				});
-				//debugTextArea.appendText(0 + ": Max workers + Penalty: " + _fitness[1] + ", Last work week: "
-						//+ _fitness[0] + ", Late start penalty: " + _fitness[2] + ".\n");
 				int sameFitnessCount = 0;
 				int gen = 1;
 				while (true) {
@@ -107,13 +96,10 @@ public class Algorithm {
 						final int manHrs=population.getFittest(0).getHighestManhours();
 						final int penalty=population.getFittest(0).getPenalty();
 						final int avgFromStart=(int)population.getFittest(2).getWeightedAverageLateStartDays();
-						tableView.scrollTo(tableView.getItems().size()-1);
+						//tableView.scrollTo(tableView.getItems().size()-1);
 						tableView.getItems().add(new Progress(gen,manHrs,penalty,currentFitness[1],avgFromStart ));
 						int i=gen;
 						Platform.runLater(() -> {
-							/*series.getData().add(new XYChart.Data(i, currentFitness[1]));
-							System.out.println(series.getData());
-							lineChart.getData().add(series);*/
 							lineCharts1.addSeries(i, manHrs);
 							lineCharts2.addSeries(i, currentFitness[1]);
 							lineCharts3.addSeries(i, avgFromStart);

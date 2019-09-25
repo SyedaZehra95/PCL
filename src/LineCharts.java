@@ -38,16 +38,21 @@ public class LineCharts  {
 	        xAxis.setLabel("generations");
 	        
 	        
-	          
-	        lineChart.setTitle(this.title);
-	        VBox vBox=new VBox(lineChart);
-	        vbox.getChildren().add(vBox);
-			topHBox.getChildren().add(vbox);
-	        return lineChart;
+
+	        this.lineChart.setAnimated(false);
+	        this.lineChart.setTitle(this.title);
+	        VBox vBox=new VBox(this.lineChart);
+	        vbox.getChildren().addAll(vBox);
+	        while (topHBox.getChildren().size() > 1) {
+				topHBox.getChildren().remove(1);
+			}
+			topHBox.getChildren().addAll(vbox);
+	        return this.lineChart;
 	    }
 	 public void addSeries(int gen, int value) {
+		
 		 this.series.getData().add(new XYChart.Data(gen,value));
-		// this.lineChart.getData().clear();
+		 this.lineChart.getData().clear();
 		 this.lineChart.getData().add(this.series);
 	 }
 
