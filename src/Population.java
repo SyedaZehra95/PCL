@@ -14,6 +14,7 @@ import javafx.scene.layout.VBox;
 public class Population {
 	private Individual[] individuals;
 	private HashSet<String> fitnessSet;
+	private int highestPenalty = -1;
 
 	public Population(int populationSize, boolean initialise) {
 		individuals = new Individual[populationSize];
@@ -64,13 +65,7 @@ public class Population {
 	}
 
 	public void visualize(HBox topHBox, VBox main_vBox) {
-		/*while (topHBox.getChildren().size() > 1) {
-			topHBox.getChildren().remove(1);
-		}
-
-		while (main_vBox.getChildren().size() > 2) {
-			main_vBox.getChildren().remove(2);
-		}*/
+		/**/
 
 //		int fittestDuration = this.getFittest(0).getFitness()[0];
 //		ArrayList<Integer> durations = new ArrayList<>();
@@ -87,20 +82,33 @@ public class Population {
 //		}
 		
 //		topTilePane.getChildren().add(createScatterPlot(main_vBox, topTilePane));
-		VBox vBox = new VBox(createScatterPlot3D(main_vBox, topHBox));
+		VBox vBox = new VBox();
 
-		Label label1 = new Label("Max resource variation penalty");
+		Label label1 = new Label("Max resource variation penalty:");
 		label1.setPadding(new Insets(10, 10, 10, 10));
-		Slider slider1 = new Slider(0, 10, 10);
+
+		Slider slider1 = new Slider(0, this.getHighestPenalty(), this.getHighestPenalty());
 		slider1.setPadding(new Insets(10, 10, 10, 10));
 		slider1.setShowTickMarks(true);
 		slider1.setShowTickLabels(true);
-		slider1.setMajorTickUnit(1);
-		slider1.setBlockIncrement(1);
+		double unit = this.getHighestPenalty() / 10;
+		if (unit < 1) {
+			unit = 1;
+		}
+		slider1.setMajorTickUnit(unit);
+		slider1.setBlockIncrement(unit);
 
-		vBox.getChildren().addAll(label1, slider1);
-		vBox.setPadding(new Insets(0, 0, 10, 20));
-		topHBox.getChildren().add(vBox);
+		slider1.setOnMouseReleased(event -> {
+			ActivityData.setMaxPenaltyShow((int) slider1.getValue());
+			vBox.getChildren().remove(0);
+			vBox.getChildren().add(0, createScatterPlot3D(main_vBox, topHBox));
+		});
+		vBox.setMinHeight(400.0);
+		vBox.requestFocus();
+		vBox.getChildren().add(0, createScatterPlot3D(main_vBox, topHBox));
+		vBox.getChildren().add(1, label1);
+		vBox.getChildren().add(2, slider1);
+		main_vBox.getChildren().add(vBox);
 
 //		topTilePane.getChildren().add(createScatterPlot(main_vBox, topTilePane, new int[] { durations.get(0) }));
 //
@@ -156,5 +164,22 @@ public class Population {
 			}
 		}
 		return fitnessSet;
+	}
+
+	public int getHighestPenalty() {
+		if (highestPenalty == -1) {
+			for (int i = 0; i < individuals.length; i++) {
+				int tempPenalty = individuals[i].getPenalty();
+				if (tempPenalty > highestPenalty) {
+					highestPenalty = tempPenalty;
+				}
+			}
+			ActivityData.setMaxPenaltyShow(highestPenalty);
+		}
+		return highestPenalty;
+	}
+
+	public void setHighestPenalty(int highestPenalty) {
+		this.highestPenalty = highestPenalty;
 	}
 }

@@ -53,10 +53,12 @@ public class Scatter3DChart {
 		ActivityData.resetChart3DData();
 		for (Individual ind : population.getIndividualsArray()) {
 			int[] fitness = ind.getFitness();
-			XYZDataItem item = new XYZDataItem(ind.getHighestManhours(), ind.getWeightedAverageLateStartDays(),
-					fitness[0]);
-			series.add(item);
-			ActivityData.addChart3DData(ind);
+			if (ActivityData.getMaxPenaltyShow() >= ind.getPenalty()) {
+				XYZDataItem item = new XYZDataItem(ind.getHighestManhours(), ind.getWeightedAverageLateStartDays(),
+						fitness[0]);
+				series.add(item);
+				ActivityData.addChart3DData(ind);
+			}
 			if (fitness[0] < min0) {
 				min0 = fitness[0];
 			}
@@ -77,6 +79,18 @@ public class Scatter3DChart {
 			}
 		}
 		dataset.add(series);
+		if (min0 == max0) {
+			min0 = min0 - 1;
+			max0 = min0 + 2;
+		}
+		if (min1 == max1) {
+			min1 = min1 - 1;
+			max1 = min1 + 2;
+		}
+		if (min2 == max2) {
+			min2 = min2 - 1;
+			max2 = min2 + 2;
+		}
 		xAxis.setRange(min1, max1);
 		yAxis.setRange(min2, max2);
 		zAxis.setRange(min0, max0);

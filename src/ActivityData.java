@@ -14,22 +14,23 @@ public class ActivityData {
 	private static int RMax = 8;
 	private static int workingHoursPerDay = 10;
 	private static int resourceVariationLimit = 10;
-	private static LocalDate baseDate = new LocalDate(2029, 1, 1);
+	private static LocalDate baseDate = new LocalDate(2099, 1, 1);
 	private static int numberOfDaysPerWeek = 5;
 	private static int errorFitness = Integer.MAX_VALUE;
-	private static LocalDate tmax = new LocalDate(2009, 1, 1);
+	private static LocalDate tmax = new LocalDate(2000, 1, 1);
 	private static boolean[] checkBoxTruth = new boolean[] { true, true, true, true, true };
 	private static File datasetFile;
 	private static int accuracyThreshold = 100;
 	private static boolean isAborted = false;
+	private static int maxPenaltyShow = -1;
 
 	private static ArrayList<Individual> chart3DData = new ArrayList<>();
 
 	public static void reset() {
 		setAborted(false);
 		activities = new ArrayList<>();
-		baseDate = new LocalDate(2029, 1, 1);
-		tmax = new LocalDate(2009, 1, 1);
+		baseDate = new LocalDate(2099, 1, 1);
+		tmax = new LocalDate(1900, 1, 1);
 	}
 
 	public static void addChart3DData(Individual individual) {
@@ -156,7 +157,7 @@ public class ActivityData {
 			for (int i = 1; i < rows; i++) {
 				Row row = sheet2.getRow(i);
 				if (row != null && row.getCell(0) != null) {
-					hMap2.put(row.getCell(1).getStringCellValue(), row.getCell(0).getStringCellValue());
+					hMap2.put(row.getCell(1).getStringCellValue(), (row.getCell(0).getStringCellValue()).toUpperCase());
 				}
 			}
 
@@ -166,7 +167,7 @@ public class ActivityData {
 			for (int i = 1; i < rows; i++) {
 				Row row = sheet3.getRow(i);
 				if (row != null && row.getCell(0) != null) {
-					hMap3.put(row.getCell(0).getStringCellValue(), row.getCell(1).getDateCellValue());
+					hMap3.put((row.getCell(0).getStringCellValue()).toUpperCase(), row.getCell(1).getDateCellValue());
 				}
 			}
 
@@ -194,9 +195,10 @@ public class ActivityData {
 			for (String keyName : hMap0.keySet()) {
 				Activity newActivity = new Activity(keyName);
 				newActivity.setManHours(hMap0.get(keyName));
-				LocalDate lastDate = new LocalDate(2013, 1, 1);
+				LocalDate lastDate = new LocalDate(1900, 1, 1);
 
 				String sysId = hMap5.get(keyName);
+				newActivity.setSystemId(sysId);
 				LocalDate endDate = new LocalDate(hMap4.get(sysId));
 				newActivity.setEndDate(endDate);
 
@@ -216,7 +218,7 @@ public class ActivityData {
 					}
 				}
 				newActivity.setStartDate(lastDate);
-				if (!lastDate.isEqual(new LocalDate(2013, 1, 1))) {
+				if (!lastDate.isEqual(new LocalDate(1900, 1, 1))) {
 					if (lastDate.isBefore(baseDate)) {
 						baseDate = lastDate;
 					}
@@ -233,7 +235,7 @@ public class ActivityData {
 	}
 
 	public static void setDatasetFile(File datasetFile) {
-		datasetFile = datasetFile;
+		ActivityData.datasetFile = datasetFile;
 	}
 
 	public static Activity getActivity(String name) {
@@ -259,5 +261,13 @@ public class ActivityData {
 
 	public static void setAborted(boolean isAborted) {
 		ActivityData.isAborted = isAborted;
+	}
+
+	public static int getMaxPenaltyShow() {
+		return maxPenaltyShow;
+	}
+
+	public static void setMaxPenaltyShow(int maxPenaltyShow) {
+		ActivityData.maxPenaltyShow = maxPenaltyShow;
 	}
 }

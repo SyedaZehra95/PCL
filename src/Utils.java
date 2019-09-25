@@ -27,9 +27,10 @@ public class Utils {
 			while (duration > 0) {
 				if (activationDate.getDayOfWeek() > ActivityData.getNumberOfDaysPerWeek()) {
 					nonWorkingDays++;
+				} else {
+					duration--;
 				}
 				activationDate = activationDate.plusDays(1);
-				duration--;
 			}
 		}
 		return nonWorkingDays;

@@ -47,6 +47,7 @@ public class LineCharts  {
 	    }
 	 public void addSeries(int gen, int value) {
 		 this.series.getData().add(new XYChart.Data(gen,value));
+		// this.lineChart.getData().clear();
 		 this.lineChart.getData().add(this.series);
 	 }
 

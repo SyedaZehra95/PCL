@@ -63,11 +63,12 @@ public class IndividualGanttChart<X, Y> extends XYChart<X, Y> {
 		yAxis.setTickLabelFill(Color.BLACK);
 		yAxis.setLabel("Activity ID");
 
-		chart.setTitle("Max manhours per week: " + individual.getHighestManhours() + " | End week: "
-				+ individual.getFitness()[0] + " weeks" + " | Duration: "
-				+ (individual.getFitness()[0] - individual.getStartWeek()) + " weeks | Resource variation penalty: "
-				+ individual.getPenalty() + " | Avg no. of days from T-min: "
-				+ df.format(individual.getWeightedAverageLateStartDays()));
+		chart.setTitle(
+				"Max manhours: " + individual.getHighestManhours() + " | End week: " + individual.getProjectEndWeek()
+						+ " | Duration: " + (individual.getFitness()[0] - individual.getStartWeek())
+						+ " weeks | Penalty: " + individual.getPenalty() + " | Avg no. of days from T-min: "
+						+ df.format(individual.getAverageLateStartDays()) + " | Weighted Avg: "
+						+ df.format(individual.getWeightedAverageLateStartDays()));
 
 		chart.setLegendVisible(false);
 		chart.setBlockHeight(10);

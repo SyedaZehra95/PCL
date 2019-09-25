@@ -7,7 +7,6 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -20,16 +19,24 @@ public class Algorithm {
 
 	private int numIterations = 1;
 	private final boolean DEBUG = false;
+	
 
 	public Population autoRun(TableView tableView, VBox main_vBox, HBox topHBox) {
 		//debugTextArea.appendText("Algorithm progress: \n\n");
 		//XYChart.Series series = new XYChart.Series();
+		while (topHBox.getChildren().size() > 1) {
+			topHBox.getChildren().remove(1);
+		}
+
+		while (main_vBox.getChildren().size() > 2) {
+			main_vBox.getChildren().remove(2);
+		}
 		VBox vBox=new VBox(5);
-		LineCharts lineCharts1=new LineCharts("Max work 	\n penalty");
+		LineCharts lineCharts1=new LineCharts("Man-Hours Per Week");
 		LineChart lineChart1=lineCharts1.run(main_vBox,topHBox,vBox);
-		LineCharts lineCharts2=new LineCharts("Man hours 	\n per week");
+		LineCharts lineCharts2=new LineCharts("End week");
 		LineChart lineChart2=lineCharts2.run(main_vBox,topHBox,vBox);
-		LineCharts lineCharts3=new LineCharts("Last Start	\n Penalty");
+		LineCharts lineCharts3=new LineCharts("Average No. of Days from T-Start");
 		LineChart lineChart3=lineCharts3.run(main_vBox,topHBox,vBox);
 		
 		
@@ -49,7 +56,7 @@ public class Algorithm {
 					ArrayList<Individual> fitIndividuals = ranking.getSubfront(0);
 					if (ActivityData.isAborted()) {
 						tableView.setPlaceholder(new Label("No Solution"));
-						//debugTextArea.appendText("\n\nNo solution.\n\n");
+						// debugTextArea.appendText("\n\nNo solution.\n\n");
 						return null;
 					}
 					fittestIndividuals.addAll(fitIndividuals);
@@ -83,7 +90,7 @@ public class Algorithm {
 					}
 					if (sameFitnessCount > 1) {
 						tableView.setPlaceholder(new Label("Done"));
-						//debugTextArea.appendText("\nDone!\n");
+						// debugTextArea.appendText("\nDone!\n");
 						break;
 					}
 
@@ -94,27 +101,22 @@ public class Algorithm {
 					population = newPopAfterRanking(unionPopulation);
 
 					if (gen % ActivityData.getAccuracyThreshold() == 0) {
-//						final Population pop = population;
-//						Platform.runLater(new Runnable() {
-//
-//							@Override
-//							public void run() {
-//								pop.visualize(topHBox, main_vBox);
-//							}
-//						});
 						int[] currentFitness = { population.getFittest(0).getFitness()[0],
 								population.getFittest(1).getFitness()[1], population.getFittest(2).getFitness()[2] };
 						final Individual ind = population.getFittest(2);
+						final int manHrs=population.getFittest(0).getHighestManhours();
+						final int penalty=population.getFittest(0).getPenalty();
+						final int avgFromStart=(int)population.getFittest(2).getWeightedAverageLateStartDays();
 						tableView.scrollTo(tableView.getItems().size()-1);
-						tableView.getItems().add(new Progress(gen,currentFitness[1],currentFitness[0], (int) ind.getWeightedAverageLateStartDays()));
+						tableView.getItems().add(new Progress(gen,manHrs,penalty,currentFitness[1],avgFromStart ));
 						int i=gen;
 						Platform.runLater(() -> {
 							/*series.getData().add(new XYChart.Data(i, currentFitness[1]));
 							System.out.println(series.getData());
 							lineChart.getData().add(series);*/
-							lineCharts1.addSeries(i, currentFitness[0]);
+							lineCharts1.addSeries(i, manHrs);
 							lineCharts2.addSeries(i, currentFitness[1]);
-							lineCharts3.addSeries(i, (int) ind.getWeightedAverageLateStartDays());
+							lineCharts3.addSeries(i, avgFromStart);
 						});
 						//debugTextArea
 								//.appendText(gen + ": Max workers + Penalty: " + currentFitness[1] + ", Last work week: "
@@ -323,6 +325,5 @@ public class Algorithm {
 	public int getObjectiveId() {
 		return objectiveId;
 	}
-	
-	
+
 }

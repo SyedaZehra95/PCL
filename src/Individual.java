@@ -1,9 +1,15 @@
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -43,6 +49,7 @@ public class Individual {
 	private int highestResourceLevel = -1;
 	private int penalty = -1;
 	private double weightedAverageLateStartDays = -1;
+	private double averageLateStartDays = -1;
 
 	public Individual() {
 		this.genes = new Activity[ActivityData.size()];
@@ -104,90 +111,73 @@ public class Individual {
 				}
 			}
 
-			int[] tempResourceLevels = new int[Days.daysBetween(ActivityData.getBaseDate(), lastDate).getDays() + 1];
+			double[] tempResourceLevels = new double[Days.daysBetween(ActivityData.getBaseDate(), lastDate).getDays()
+					+ 1];
 
 			for (Activity activity : this.genes) {
 				int start = Days.daysBetween(ActivityData.getBaseDate(), activity.getActivationDate()).getDays();
 				int end = Days.daysBetween(ActivityData.getBaseDate(), activity.getDeactivationDate()).getDays();
 				int k = start;
 				for (k = start; k < end; k++) {
-					if (ActivityData.getBaseDate().plusDays(k).getDayOfWeek() <= ActivityData
-							.getNumberOfDaysPerWeek()) {
-						tempResourceLevels[k] += activity.getNumberOfResources();
-					} else {
-						tempResourceLevels[k] = -1;
-					}
+					double res = activity.getNumberOfResources();
+					tempResourceLevels[k] += res;
 				}
 
 				if (k == end) {
-					if (ActivityData.getBaseDate().plusDays(k).getDayOfWeek() <= ActivityData
-							.getNumberOfDaysPerWeek()) {
-						tempResourceLevels[k] += (activity.getNumberOfResources() * activity.getRatioOfLastDayUsed())
-								+ 1;
-					} else {
-						tempResourceLevels[k] = -1;
-					}
+					tempResourceLevels[k] += (activity.getNumberOfResources() * activity.getRatioOfLastDayUsed());
 				}
 			}
-
-			ArrayList<Integer> list = new ArrayList<>();
 
 			for (int i = 0; i < tempResourceLevels.length; i++) {
-				if (tempResourceLevels[i] != -1) {
-					list.add(tempResourceLevels[i]);
+				if (ActivityData.getBaseDate().plusDays(i).getDayOfWeek() > ActivityData.getNumberOfDaysPerWeek()) {
+					tempResourceLevels[i] = -1;
 				}
 			}
 
-			resourceLevels = new int[list.size()];
-
-//			int debug_sum = 0;
-			for (int i = 0; i < resourceLevels.length; i++) {
-				resourceLevels[i] = list.get(i);
-//				debug_sum += resourceLevels[i];
+			this.resourceLevels = new int[tempResourceLevels.length];
+			for (int i = 0; i < this.resourceLevels.length; ++i) {
+				this.resourceLevels[i] = (int) tempResourceLevels[i];
 			}
 
-//			System.out.println(debug_sum * 10);
-
 			int currentWeek = 0;
-			int i = 0;
 			int weeklyResourceTotal = 0;
-			int currentDay = 0;
+			boolean isWeekendStarted = false;
+			int i;
 
 			weeklyResourceLevels = new HashMap<>();
 			weekDates = new HashMap<>();
 
-			while (i < this.resourceLevels.length) {
-				if (ActivityData.getBaseDate().plusDays(currentDay).getDayOfWeek() <= ActivityData
-						.getNumberOfDaysPerWeek()) {
-					if (weeklyResourceTotal == -1) {
-						weeklyResourceTotal++;
-					}
-					weeklyResourceTotal += resourceLevels[i];
-					i++;
-				} else {
-					if (weeklyResourceTotal != -1) {
+			for (i = 0; i < resourceLevels.length; i++) {
+				if (resourceLevels[i] == -1) {
+					if (!isWeekendStarted) {
 						weeklyResourceLevels.put(currentWeek, weeklyResourceTotal);
-						if (currentWeek == 0) {
-							weekDates.put(currentWeek, ActivityData.getBaseDate().toString());
+						if (currentWeek != 0) {
+							LocalDate weekDate = ActivityData.getBaseDate().plusDays(i);
+							weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
+							weekDates.put(currentWeek, weekDate.toString());
 						} else {
-							weekDates.put(currentWeek, ActivityData.getBaseDate()
-									.plusDays(currentDay - ActivityData.getNumberOfDaysPerWeek()).toString());
+							LocalDate weekDate = ActivityData.getBaseDate();
+							weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
+							weekDates.put(currentWeek, weekDate.toString());
 						}
+						isWeekendStarted = true;
+						weeklyResourceTotal = 0;
 						currentWeek++;
 					}
-					weeklyResourceTotal = -1;
-//					if (resourceLevels[i] == 0) {
-//						i++;
-//					}
+				} else {
+					isWeekendStarted = false;
+					weeklyResourceTotal += resourceLevels[i];
 				}
-				currentDay++;
 			}
-			weeklyResourceLevels.put(currentWeek, weeklyResourceTotal);
-			LocalDate date = ActivityData.getBaseDate().plusDays(currentDay);
-			weekDates.put(currentWeek, date.minusDays(date.getDayOfWeek() - 1).toString());
 
-			fitness[0] = weeklyResourceLevels.size() - 1;
+			if (weeklyResourceTotal != 0) {
+				weeklyResourceLevels.put(currentWeek, weeklyResourceTotal);
+				LocalDate weekDate = ActivityData.getBaseDate().plusDays(i);
+				weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
+				weekDates.put(currentWeek, weekDate.toString());
+			}
 
+			fitness[0] = weeklyResourceLevels.size();
 		}
 
 		if (fitness[1] == -1) {
@@ -223,8 +213,12 @@ public class Individual {
 				}
 			}
 
+			int globalPeak = highestResourceLevel;
 			int lowestResourceLevel = highestResourceLevel;
 			for (int i = halfIndex; i < weeklyResourceLevels.size(); i++) {
+				if (weeklyResourceLevels.get(i) > globalPeak) {
+					globalPeak = weeklyResourceLevels.get(i);
+				}
 				if (weeklyResourceLevels.get(i) < lowestResourceLevel) {
 					lowestResourceLevel = weeklyResourceLevels.get(i);
 				} else {
@@ -240,25 +234,28 @@ public class Individual {
 				}
 			}
 
-			this.setHighestResourceLevel(highestResourceLevel);
+			this.setHighestResourceLevel(globalPeak);
 			this.setPenalty(changeInResources);
 
-			fitness[1] = highestResourceLevel + changeInResources;
+			fitness[1] = globalPeak + changeInResources;
 
 		}
 
 		if (fitness[2] == -1) {
 			double sum = 0;
+			double weightedSum = 0;
 			double total = 0;
 			int distancePenalty = 0;
 			for (Activity gene : genes) {
 				int days = Days.daysBetween(gene.getStartDate(), gene.getActivationDate()).getDays();
+				sum += days;
 				distancePenalty += days * Math.pow(gene.getManHours(), 2);
-				sum += days * gene.getManHours();
+				weightedSum += days * gene.getManHours();
 				total += gene.getManHours();
 			}
 
-			setWeightedAverageLateStartDays(sum / total);
+			setAverageLateStartDays(sum / genes.length);
+			setWeightedAverageLateStartDays(weightedSum / total);
 			fitness[2] = distancePenalty;
 		}
 		return fitness;
@@ -358,83 +355,155 @@ public class Individual {
 	}
 
 	public void printToExcel() {
+		getFitness();
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet sheet = workbook.createSheet("Schedule");
 
+		CellStyle grayStyle = workbook.createCellStyle();
+		grayStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+		grayStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		grayStyle.setBorderBottom(BorderStyle.THIN);
+		grayStyle.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+		grayStyle.setBorderLeft(BorderStyle.THIN);
+		grayStyle.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+		grayStyle.setBorderRight(BorderStyle.THIN);
+		grayStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
+		grayStyle.setBorderTop(BorderStyle.THIN);
+		grayStyle.setTopBorderColor(IndexedColors.BLACK.getIndex());
+
+		CellStyle darkGrayStyle = workbook.createCellStyle();
+		Font font = workbook.createFont();
+		font.setColor(HSSFColor.HSSFColorPredefined.WHITE.getIndex());
+		darkGrayStyle.setFont(font);
+		darkGrayStyle.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
+		darkGrayStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+		darkGrayStyle.setBorderBottom(BorderStyle.THIN);
+		darkGrayStyle.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+		darkGrayStyle.setBorderLeft(BorderStyle.THIN);
+		darkGrayStyle.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+		darkGrayStyle.setBorderRight(BorderStyle.THIN);
+		darkGrayStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
+		darkGrayStyle.setBorderTop(BorderStyle.THIN);
+		darkGrayStyle.setTopBorderColor(IndexedColors.BLACK.getIndex());
+
 		int rownum = 0;
+		int colNum = 0;
 
 		Row headerRow = sheet.createRow(rownum++);
 
-		Cell hCell = headerRow.createCell(0);
+		Cell hCell = headerRow.createCell(colNum);
 		hCell.setCellValue("Test Pacakge");
+		hCell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		hCell = headerRow.createCell(1);
+		hCell = headerRow.createCell(colNum);
+		hCell.setCellValue("System");
+		hCell.setCellStyle(darkGrayStyle);
+		colNum++;
+
+		hCell = headerRow.createCell(colNum);
 		hCell.setCellValue("First Avail (T-min)");
+		hCell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		hCell = headerRow.createCell(2);
+		hCell = headerRow.createCell(colNum);
 		hCell.setCellValue("Test Start");
+		hCell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		hCell = headerRow.createCell(3);
+		hCell = headerRow.createCell(colNum);
 		hCell.setCellValue("Test Finish");
+		hCell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		hCell = headerRow.createCell(4);
+		hCell = headerRow.createCell(colNum);
 		hCell.setCellValue("T-Max");
+		hCell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		hCell = headerRow.createCell(5);
+		hCell = headerRow.createCell(colNum);
 		hCell.setCellValue("Resource Size (manhours)");
+		hCell.setCellStyle(darkGrayStyle);
+		colNum++;
 
 		LocalDate baseDate = ActivityData.getBaseDate();
-		int cell = 6;
+		int cell = colNum;
 
 		while (baseDate.isBefore(ActivityData.getTmax())) {
 			hCell = headerRow.createCell(cell);
 			hCell.setCellValue(baseDate.toString());
+			hCell.setCellStyle(darkGrayStyle);
 			baseDate = baseDate.plusDays(1);
 			cell++;
 		}
 
 		for (int i = 0; i < this.genes.length; i++) {
 			Row row = sheet.createRow(rownum++);
-			writeTestPackage(i, row, 6);
+			writeTestPackage(i, row, colNum, grayStyle, darkGrayStyle);
+		}
+
+		for (int i = 0; i < 6; i++) {
+			sheet.autoSizeColumn(i);
 		}
 
 		try {
 			FileOutputStream out = new FileOutputStream(new File("HTSchedule.xlsx"));
 			workbook.write(out);
 			out.close();
+			workbook.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void writeTestPackage(int id, Row row, int dateStartIndex) {
+	private void writeTestPackage(int id, Row row, int dateStartIndex, CellStyle grayStyle, CellStyle darkGrayStyle) {
 		Activity gene = this.genes[id];
 
-		Cell cell = row.createCell(0);
+		int colNum = 0;
+		Cell cell = row.createCell(colNum);
 		cell.setCellValue(gene.getName());
+		cell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		cell = row.createCell(1);
+		cell = row.createCell(colNum);
+		cell.setCellValue(gene.getSystemId());
+		cell.setCellStyle(darkGrayStyle);
+		colNum++;
+
+		cell = row.createCell(colNum);
 		cell.setCellValue(gene.getStartDate().toString());
+		cell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		cell = row.createCell(2);
+		cell = row.createCell(colNum);
 		cell.setCellValue(gene.getActivationDate().toString());
+		cell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		cell = row.createCell(3);
+		cell = row.createCell(colNum);
 		cell.setCellValue(gene.getDeactivationDate().toString());
+		cell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		cell = row.createCell(4);
+		cell = row.createCell(colNum);
 		cell.setCellValue(gene.getEndDate().toString());
+		cell.setCellStyle(darkGrayStyle);
+		colNum++;
 
-		cell = row.createCell(5);
+		cell = row.createCell(colNum);
 		cell.setCellValue(gene.getManHours());
+		cell.setCellStyle(darkGrayStyle);
+		colNum++;
 
 		LocalDate Tmin = gene.getStartDate();
 		cell = row.createCell(Days.daysBetween(ActivityData.getBaseDate(), Tmin).getDays() + dateStartIndex);
-		cell.setCellValue("Tmin");
+//		cell.setCellValue("Tmin");
+		cell.setCellStyle(darkGrayStyle);
 
 		LocalDate Tmax = gene.getEndDate();
 		cell = row.createCell(Days.daysBetween(ActivityData.getBaseDate(), Tmax).getDays() + dateStartIndex);
-		cell.setCellValue("Tmax");
+//		cell.setCellValue("Tmax");
+		cell.setCellStyle(darkGrayStyle);
 
 		LocalDate activationDate = gene.getActivationDate();
 		LocalDate deactivationDate = gene.getDeactivationDate();
@@ -443,7 +512,12 @@ public class Individual {
 			if (Utils.isWorkingDay(activationDate)) {
 				cell = row.createCell(
 						Days.daysBetween(ActivityData.getBaseDate(), activationDate).getDays() + dateStartIndex);
-				cell.setCellValue(gene.getNumberOfResources());
+				cell.setCellValue(gene.getNumberOfResources() * ActivityData.workingHoursPerDay());
+				if (activationDate.isEqual(Tmin)) {
+					cell.setCellStyle(darkGrayStyle);
+				} else {
+					cell.setCellStyle(grayStyle);
+				}
 			}
 			activationDate = activationDate.plusDays(1);
 		}
@@ -452,8 +526,15 @@ public class Individual {
 			activationDate = activationDate.plusDays(1);
 		}
 		cell = row.createCell(Days.daysBetween(ActivityData.getBaseDate(), activationDate).getDays() + dateStartIndex);
-		cell.setCellValue(gene.getNumberOfResources() * gene.getRatioOfLastDayUsed());
-
+		DecimalFormat df = new DecimalFormat("#.###");
+		String val = df.format(
+				(gene.getNumberOfResources() * gene.getRatioOfLastDayUsed() * ActivityData.workingHoursPerDay()));
+		cell.setCellValue(Double.parseDouble(val));
+		if (activationDate.isEqual(Tmin)) {
+			cell.setCellStyle(darkGrayStyle);
+		} else {
+			cell.setCellStyle(grayStyle);
+		}
 	}
 
 	private NumberAxis createYaxis() {
@@ -494,7 +575,7 @@ public class Individual {
 		totalDays = ((totalDays / 25) + 1) * 25;
 
 		int totalWeeks = totalDays / 7;
-		LocalDate curDate = new LocalDate(weekDates.get(i));
+		LocalDate curDate = new LocalDate(weekDates.get(i - 1));
 		while (i < totalWeeks) {
 			curDate = curDate.plusWeeks(1);
 			series1.getData().add(new XYChart.Data(curDate.toString(), 0));
@@ -540,5 +621,20 @@ public class Individual {
 
 	public void setWeightedAverageLateStartDays(double weightedAverageLateStartDays) {
 		this.weightedAverageLateStartDays = weightedAverageLateStartDays;
+	}
+
+	public double getAverageLateStartDays() {
+		if (this.averageLateStartDays == -1) {
+			this.getFitness();
+		}
+		return averageLateStartDays;
+	}
+
+	public void setAverageLateStartDays(double averageLateStartDays) {
+		this.averageLateStartDays = averageLateStartDays;
+	}
+
+	public String getProjectEndWeek() {
+		return weekDates.get(getFitness()[0] - 1);
 	}
 }
