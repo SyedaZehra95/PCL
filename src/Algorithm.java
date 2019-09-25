@@ -96,10 +96,11 @@ public class Algorithm {
 						final int manHrs=population.getFittest(0).getHighestManhours();
 						final int penalty=population.getFittest(0).getPenalty();
 						final int avgFromStart=(int)population.getFittest(2).getWeightedAverageLateStartDays();
-						//tableView.scrollTo(tableView.getItems().size()-1);
-						tableView.getItems().add(new Progress(gen,manHrs,penalty,currentFitness[1],avgFromStart ));
 						int i=gen;
+						tableView.getItems().add(new Progress(gen,manHrs,penalty,currentFitness[1],avgFromStart ));
+						
 						Platform.runLater(() -> {
+							tableView.scrollTo(tableView.getItems().size()-2);
 							lineCharts1.addSeries(i, manHrs);
 							lineCharts2.addSeries(i, currentFitness[1]);
 							lineCharts3.addSeries(i, avgFromStart);

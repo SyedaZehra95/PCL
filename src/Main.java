@@ -237,7 +237,7 @@ public class Main extends Application {
 		hbButton.setPadding(new Insets(10, 0, 0, 0));
 		grid_config.add(hbButton, 1, position);
 		position++;
-		System.out.println(position);
+		
 		autoResizeColumns(tableView);
 		VBox tableArea = new VBox(tableView);
 		
