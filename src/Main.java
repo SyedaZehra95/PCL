@@ -1,4 +1,6 @@
 import java.io.File;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -10,12 +12,20 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -111,7 +121,7 @@ public class Main extends Application {
 		TableView<Progress> tableView = new TableView<Progress>();
 		
 		tableView.setMinHeight(300.5);
-	    tableView.setMinWidth(520);
+	    tableView.setMinWidth(540);
 	    tableView.setMaxWidth(435);
         TableColumn<Progress,String> column1 = new TableColumn<Progress,String>("Run");
         column1.setCellValueFactory(new PropertyValueFactory<>("index"));
@@ -119,9 +129,9 @@ public class Main extends Application {
         column2.setCellValueFactory(new PropertyValueFactory<>("ManHours"));
         TableColumn<Progress,String> column3 = new TableColumn<Progress,String>("Penalty");
         column3.setCellValueFactory(new PropertyValueFactory<>("Penalty"));
-        TableColumn<Progress,String> column4 = new TableColumn<Progress,String>("Last Week");
+        TableColumn<Progress,String> column4 = new TableColumn<Progress,String>("  End Week  ");
         column4.setCellValueFactory(new PropertyValueFactory<>("EndWeek"));
-        TableColumn<Progress,String> column5 = new TableColumn<Progress,String>("Average No. Of Days from T-start");
+        TableColumn<Progress,String> column5 = new TableColumn<Progress,String>("Average No. Of Days from TMin");
         column5.setCellValueFactory(new PropertyValueFactory<>("AvgFromStart"));
         
         
@@ -130,8 +140,13 @@ public class Main extends Application {
         tableView.getColumns().add(column3);
         tableView.getColumns().add(column4);
         tableView.getColumns().add(column5);
-        
-		
+        tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        final KeyCodeCombination keyCodeCopy = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
+        tableView.setOnKeyPressed(event -> {
+            if (keyCodeCopy.match(event)) {
+                copySelectionToClipboard(tableView);
+            }
+        });
 		
 		
         //tableView.prefHeightProperty().bind(stage.heightProperty());
@@ -172,13 +187,27 @@ public class Main extends Application {
 		grid_config.add(new Label("Accuracy"), 0, position);
 		grid_config.add(accuracyTextField, 1, position);
 		position++;
-
+		int button_position=position;
+		int[] progress = {7};
 		Button buttonRunOptimization = new Button("Run Optimization");
 		buttonRunOptimization.setId("dark-blue");
+		HBox hbButton = new HBox(buttonRunOptimization);
+		hbButton.setPadding(new Insets(10, 0, 0, 0));
+		grid_config.add(hbButton, 1, position);
+		position++;
 		buttonRunOptimization.setOnAction(new EventHandler<ActionEvent>() {
 			@SuppressWarnings("unused")
 			@Override
 			public void handle(ActionEvent arg0) {
+				HBox piBox=new HBox();
+				
+				ProgressIndicator pi = new ProgressIndicator();
+				piBox.getChildren().add(pi);
+				progress[0]=1;
+				
+				piBox.setMargin(pi, new Insets(5,5,5,135));
+				//toggle_button(progress[0],hbButton,buttonRunOptimization);
+				grid_config.add(piBox, 1, button_position);
 				ActivityData.setAborted(false);
 				setDataParams(Integer.parseInt(resourceVariationLimitTextField.getText()),
 						Integer.parseInt(workingHoursTextField.getText()), Integer.parseInt(RMaxTextField.getText()),
@@ -189,8 +218,13 @@ public class Main extends Application {
 				new Thread(() -> {
 					Algorithm algorithm = new Algorithm();
 					Population resultPopulation = algorithm.autoRun(tableView, main_vBox, topHBox);
-					System.out.println(main_vBox);
-					System.out.println(topHBox);
+					
+					if(resultPopulation==null) {
+						System.out.println("printing pop"+ resultPopulation);
+						Platform.runLater(()->{
+							piBox.getChildren().clear();
+						});
+					}
 					if (!ActivityData.isAborted()) {
 						Platform.runLater(new Runnable() {
 
@@ -207,6 +241,10 @@ public class Main extends Application {
 										if (!ActivityData.isAborted()) {
 											System.out.println("I am here");
 											resultPopulation.visualize(topHBox, main_vBox);
+											pi.setProgress(100);
+											progress[0]=0;
+											//toggle_button(progress[0],hbButton,buttonRunOptimization);
+											
 										}
 									} else {
 										if (topHBox.getChildren().size() > 1) {
@@ -233,15 +271,13 @@ public class Main extends Application {
 			}
 		});
 
-		HBox hbButton = new HBox(buttonRunOptimization);
-		hbButton.setPadding(new Insets(10, 0, 0, 0));
-		grid_config.add(hbButton, 1, position);
-		position++;
+		
 		
 		autoResizeColumns(tableView);
 		VBox tableArea = new VBox(tableView);
 		
 		//tableArea.setPadding(new Insets(10, 0, 0, 0));
+		
 		grid_config.add(tableArea, 0, position, 2, 1);
 		//grid_config.add(vbox, 0, position, 2, 1);
 		position++;
@@ -255,7 +291,14 @@ public class Main extends Application {
 		}
 		ActivityData.reset();
 	}
-
+	protected void toggle_button(int progress, HBox hbox,Button button) {
+		if(progress==0) {
+			hbox.getChildren().add(button);
+		}else {
+			hbox.getChildren().clear();
+		}
+		
+	}
 	public static void autoResizeColumns(TableView<?> table) {
 		// Set the right policy
 		table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
@@ -277,5 +320,33 @@ public class Main extends Application {
 			// set the new max-width with some extra space
 			column.setPrefWidth(max + 10.0d);
 		});
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void copySelectionToClipboard(final TableView<?> table) {
+	    final Set<Integer> rows = new TreeSet<>();
+	    for (final TablePosition tablePosition : table.getSelectionModel().getSelectedCells()) {
+	        rows.add(tablePosition.getRow());
+	    }
+	    final StringBuilder strb = new StringBuilder();
+	    boolean firstRow = true;
+	    for (final Integer row : rows) {
+	        if (!firstRow) {
+	            strb.append('\n');
+	        }
+	        firstRow = false;
+	        boolean firstCol = true;
+	        for (final TableColumn<?, ?> column : table.getColumns()) {
+	            if (!firstCol) {
+	                strb.append('\t');
+	            }
+	            firstCol = false;
+	            final Object cellData = column.getCellData(row);
+	            strb.append(cellData == null ? "" : cellData.toString());
+	        }
+	    }
+	    final ClipboardContent clipboardContent = new ClipboardContent();
+	    clipboardContent.putString(strb.toString());
+	    Clipboard.getSystemClipboard().setContent(clipboardContent);
 	}
 }

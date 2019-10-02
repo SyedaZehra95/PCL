@@ -2,14 +2,14 @@
 public class Progress {
 	private int index=0;
 	private int man_hours=0;
-	private int end_week=0;
+	private String end_week="";
 	private int penalty=0;
 	private int avg_from_start=0;
 
     public Progress() {
     }
 
-    public Progress(int index,int man_hours, int penalty,int end_week, int avg_from_start) {
+    public Progress(int index,int man_hours, int penalty,String end_week, int avg_from_start) {
        this.index=index;
        this.man_hours=man_hours;
        this.end_week=end_week;
@@ -25,7 +25,7 @@ public class Progress {
         return this.man_hours;
     }
     
-    public int getEndWeek() {
+    public String getEndWeek() {
         return this.end_week;
     }
     
@@ -44,7 +44,7 @@ public class Progress {
         this.man_hours=man_hours;
     }
 
-    public void setEndWeek(int end_week) {
+    public void setEndWeek(String end_week) {
         this.end_week=end_week;
     }
 

@@ -1,14 +1,24 @@
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 public class Algorithm {
 
@@ -22,135 +32,162 @@ public class Algorithm {
 	
 
 	public Population autoRun(TableView tableView, VBox main_vBox, HBox topHBox) {
-		 if(topHBox.getChildren().size() > 1) {
-				Platform.runLater(()->{
-					 while (topHBox.getChildren().size() > 1) {
-					topHBox.getChildren().remove(1);
-					
-					 }
-				});
-			}
-		VBox vBox=new VBox(5);
-		LineCharts lineCharts1=new LineCharts("Man-Hours Per Week");
-		LineChart lineChart1=lineCharts1.run(main_vBox,topHBox,vBox);
-		LineCharts lineCharts2=new LineCharts("Last week");
-		LineChart lineChart2=lineCharts2.run(main_vBox,topHBox,vBox);
-		LineCharts lineCharts3=new LineCharts("Average No. of Days from T-Start");
-		LineChart lineChart3=lineCharts3.run(main_vBox,topHBox,vBox);
 		
 		
-		tableView.getItems().clear();
-		populationSize = ActivityData.size() * 1;
-		int sampleSize = 10;
-		if (objectiveId == 100) {
-			ArrayList<Individual> solutions = new ArrayList<>();
-			for (int itr = 0; itr < numIterations; itr++) {
-				if (ActivityData.isAborted()) {
-					return null;
-				}
-				ArrayList<Individual> fittestIndividuals = new ArrayList<>();
-				while (fittestIndividuals.size() < this.populationSize) {
-					Population samplePop = new Population(sampleSize, true);
-					Ranking ranking = new Ranking(samplePop);
-					ArrayList<Individual> fitIndividuals = ranking.getSubfront(0);
-					if (ActivityData.isAborted()) {
-						tableView.setPlaceholder(new Label("No Solution"));
-						// debugTextArea.appendText("\n\nNo solution.\n\n");
-						return null;
-					}
-					fittestIndividuals.addAll(fitIndividuals);
-				}
-
-				Population population = new Population(populationSize, false);
-				for (int i = 0; i < populationSize; i++) {
-					population.saveIndividual(i, fittestIndividuals.get(i));
-				}
-
-				Population unionPopulation = new Population(populationSize, false);
-
-				int[] _fitness = population.getIndividual(0).getFitness();
-//				tableView.getItems().add(new Progress(0,_fitness[1],_fitness[0],_fitness[2]));
-				final int[] __fitness = population.getIndividual(0).getFitness();
-				int sameFitnessCount = 0;
-				int gen = 1;
-				while (true) {
-					if (ActivityData.isAborted()) {
-						return null;
-					}
-					if (sameFitnessCount > 1) {
-						tableView.setPlaceholder(new Label("Done"));
-						// debugTextArea.appendText("\nDone!\n");
-						break;
-					}
-
-					Population offspringPopulation = evolveForMultiObjective(population);
-					unionPopulation = new Population(population.size() + offspringPopulation.size(), false);
-					unionPopulation.setIndividualsArray(
-							Utils.concat(population.getIndividualsArray(), offspringPopulation.getIndividualsArray()));
-					population = newPopAfterRanking(unionPopulation);
-
-					if (gen % ActivityData.getAccuracyThreshold() == 0) {
-						int[] currentFitness = { population.getFittest(0).getFitness()[0],
-								population.getFittest(1).getFitness()[1], population.getFittest(2).getFitness()[2] };
-						final Individual ind = population.getFittest(2);
-						final int manHrs=population.getFittest(0).getHighestManhours();
-						final int penalty=population.getFittest(0).getPenalty();
-						final int avgFromStart=(int)population.getFittest(2).getWeightedAverageLateStartDays();
-						int i=gen;
-						tableView.getItems().add(new Progress(gen,manHrs,penalty,currentFitness[1],avgFromStart ));
+		try {
+			//topHBox.getChildren().remove(1);
+			 if(topHBox.getChildren().size() > 1) {
+					Platform.runLater(()->{
+						 while (topHBox.getChildren().size() > 1) {
+						topHBox.getChildren().remove(1);
 						
-						Platform.runLater(() -> {
-							tableView.scrollTo(tableView.getItems().size()-2);
-							lineCharts1.addSeries(i, manHrs);
-							lineCharts2.addSeries(i, currentFitness[1]);
-							lineCharts3.addSeries(i, avgFromStart);
-						});
-						//debugTextArea
-								//.appendText(gen + ": Max workers + Penalty: " + currentFitness[1] + ", Last work week: "
-										//+ currentFitness[0] + ", Late start penalty: " + currentFitness[2] + ".\n");
-
-						if (_fitness[0] == currentFitness[0] && _fitness[1] == currentFitness[1]
-								&& _fitness[2] == currentFitness[2]) {
-							sameFitnessCount++;
-						} else {
-							_fitness = currentFitness;
+						 }
+					});
+				}
+			    
+			 
+			VBox vBox=new VBox(5);
+			LineCharts lineCharts1=new LineCharts("Man-Hours Per Week");
+			LineChart lineChart1=lineCharts1.run(0,main_vBox,topHBox,vBox);
+			LineCharts lineCharts2=new LineCharts("End week");
+			LineChart lineChart2=lineCharts2.run(0,main_vBox,topHBox,vBox);
+			LineCharts lineCharts3=new LineCharts("Average No. of Days from TMin");
+			LineChart lineChart3=lineCharts3.run(0,main_vBox,topHBox,vBox);
+			
+			
+			tableView.getItems().clear();
+			populationSize = ActivityData.size() * 1;
+			int sampleSize = 10;
+			if (objectiveId == 100) {
+				ArrayList<Individual> solutions = new ArrayList<>();
+				for (int itr = 0; itr < numIterations; itr++) {
+					if (ActivityData.isAborted()) {
+						return null;
+					}
+					ArrayList<Individual> fittestIndividuals = new ArrayList<>();
+					while (fittestIndividuals.size() < this.populationSize) {
+						Population samplePop = new Population(sampleSize, true);
+						Ranking ranking = new Ranking(samplePop);
+						ArrayList<Individual> fitIndividuals = ranking.getSubfront(0);
+						if (ActivityData.isAborted()) {
+							tableView.setPlaceholder(new Label("No Solution"));
+							// debugTextArea.appendText("\n\nNo solution.\n\n");
+							return null;
 						}
+						fittestIndividuals.addAll(fitIndividuals);
 					}
 
-					if (DEBUG) {
-						System.out.println(population.getFittest(0).getFitness()[0] + ", "
-								+ population.getFittest(1).getFitness()[1]);
+					Population population = new Population(populationSize, false);
+					for (int i = 0; i < populationSize; i++) {
+						population.saveIndividual(i, fittestIndividuals.get(i));
 					}
-					gen++;
-				}
-				Ranking ranking = new Ranking(population);
-				ArrayList<Individual> fitIndividuals = ranking.getSubfront(0);
-				solutions.addAll(fitIndividuals);
-			}
 
-			Population fittestPopulation = new Population(solutions.size(), false);
-			for (int z = 0; z < solutions.size(); z++) {
-				fittestPopulation.saveIndividual(z, solutions.get(z));
-			}
-			Ranking ranking = new Ranking(fittestPopulation);
-			ArrayList<Individual> pareto = ranking.getSubfront(0);
-			Population paretoPopulation = new Population(pareto.size(), false);
-			for (int z = 0; z < paretoPopulation.size(); z++) {
-				paretoPopulation.saveIndividual(z, pareto.get(z));
-			}
-			System.out.println("Done.");
-			return paretoPopulation;
-		} else {
-			Population fittestPopulation = new Population(numIterations, false);
-			for (int itr = 0; itr < numIterations; itr++) {
-				Population population = new Population(populationSize, true);
-				for (int gen = 0; gen < numberOfGenerations; gen++) {
-					population = evolve(population);
+					Population unionPopulation = new Population(populationSize, false);
+
+					int[] _fitness = population.getIndividual(0).getFitness();
+//					tableView.getItems().add(new Progress(0,_fitness[1],_fitness[0],_fitness[2]));
+					final int[] __fitness = population.getIndividual(0).getFitness();
+					int sameFitnessCount = 0;
+					int gen = 1;
+					while (true) {
+						if (ActivityData.isAborted()) {
+							return null;
+						}
+						if (sameFitnessCount > 1) {
+							tableView.setPlaceholder(new Label("Done"));
+							// debugTextArea.appendText("\nDone!\n");
+							break;
+						}
+
+						Population offspringPopulation = evolveForMultiObjective(population);
+						unionPopulation = new Population(population.size() + offspringPopulation.size(), false);
+						unionPopulation.setIndividualsArray(
+								Utils.concat(population.getIndividualsArray(), offspringPopulation.getIndividualsArray()));
+						population = newPopAfterRanking(unionPopulation);
+
+						if (gen % ActivityData.getAccuracyThreshold() == 0) {
+							int[] currentFitness = { population.getFittest(0).getFitness()[0],
+									population.getFittest(1).getFitness()[1], population.getFittest(2).getFitness()[2] };
+							final Individual ind = population.getFittest(2);
+							final int manHrs=population.getFittest(0).getHighestManhours();
+							final int penalty=population.getFittest(0).getPenalty();
+							final int avgFromStart=(int)population.getFittest(2).getWeightedAverageLateStartDays();
+							int i=gen;
+							
+							//Individual inds=new Individual();
+							//System.out.println();
+							tableView.getItems().add(new Progress(gen,manHrs,penalty,ind.getProjectEndWeek(),avgFromStart ));
+							
+							Platform.runLater(() -> {
+								tableView.scrollTo(tableView.getItems().size()-2);
+								lineCharts1.addSeries(i, manHrs);
+								//System.out.println(currentFitness[1]);
+								lineCharts2.addSeries(i, currentFitness[0]);
+								lineCharts3.addSeries(i, avgFromStart);
+							});
+							//debugTextArea
+									//.appendText(gen + ": Max workers + Penalty: " + currentFitness[1] + ", Last work week: "
+											//+ currentFitness[0] + ", Late start penalty: " + currentFitness[2] + ".\n");
+
+							if (_fitness[0] == currentFitness[0] && _fitness[1] == currentFitness[1]
+									&& _fitness[2] == currentFitness[2]) {
+								sameFitnessCount++;
+							} else {
+								_fitness = currentFitness;
+							}
+						}
+
+						if (DEBUG) {
+							System.out.println(population.getFittest(0).getFitness()[0] + ", "
+									+ population.getFittest(1).getFitness()[1]);
+						}
+						gen++;
+					}
+					Ranking ranking = new Ranking(population);
+					ArrayList<Individual> fitIndividuals = ranking.getSubfront(0);
+					solutions.addAll(fitIndividuals);
 				}
-				fittestPopulation.saveIndividual(itr, population.getFittest(objectiveId));
+
+				Population fittestPopulation = new Population(solutions.size(), false);
+				for (int z = 0; z < solutions.size(); z++) {
+					fittestPopulation.saveIndividual(z, solutions.get(z));
+				}
+				Ranking ranking = new Ranking(fittestPopulation);
+				ArrayList<Individual> pareto = ranking.getSubfront(0);
+				Population paretoPopulation = new Population(pareto.size(), false);
+				for (int z = 0; z < paretoPopulation.size(); z++) {
+					paretoPopulation.saveIndividual(z, pareto.get(z));
+				}
+				System.out.println("Done.");
+				return paretoPopulation;
+			} else {
+				Population fittestPopulation = new Population(numIterations, false);
+				for (int itr = 0; itr < numIterations; itr++) {
+					Population population = new Population(populationSize, true);
+					for (int gen = 0; gen < numberOfGenerations; gen++) {
+						population = evolve(population);
+					}
+					fittestPopulation.saveIndividual(itr, population.getFittest(objectiveId));
+				}
+				return fittestPopulation;
 			}
-			return fittestPopulation;
+			
+		}catch(Exception e){
+			Platform.runLater(()->{
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setHeaderText("An exception occurred!");
+				alert.getDialogPane().setExpandableContent(new ScrollPane(new TextArea(sw.toString())));
+				alert.showAndWait();
+				
+			});
+
+			
 		}
+		return null;
+		
 	}
 
 	public Population run() {
