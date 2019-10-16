@@ -1,8 +1,12 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -150,23 +154,45 @@ public class ActivityData {
 					}
 				}
 			}
+			
+			
 
 			HashMap<String, String> hMap2 = new HashMap<>();
+			HashMap<String,Date> hMap21=new HashMap<>();
+			XSSFSheet sheet41 = workbook.getSheetAt(4);
 			XSSFSheet sheet2 = workbook.getSheetAt(2);
 			rows = sheet2.getPhysicalNumberOfRows();
+			int rows4 = sheet41.getPhysicalNumberOfRows();
 			for (int i = 1; i < rows; i++) {
 				Row row = sheet2.getRow(i);
+				
 				if (row != null && row.getCell(0) != null) {
 					hMap2.put(row.getCell(1).getStringCellValue(), (row.getCell(0).getStringCellValue()).toUpperCase());
 				}
+				
+				//if(i<rows4) {
+					//Row row4 = sheet41.getRow(i);
+				
+					if (row != null && row.getCell(2) != null) {
+						
+						row.getCell(2).setCellType(CellType.NUMERIC);
+						/*System.out.println(row.getCell(2).getDateCellValue());
+						System.out.println(row.getCell(1).getStringCellValue());*/
+						hMap21.put(row.getCell(1).getStringCellValue().toUpperCase(), row.getCell(2).getDateCellValue());
+					}
+				//}
 			}
-
+			
+			
 			HashMap<String, Date> hMap3 = new HashMap<>();
+			
 			XSSFSheet sheet3 = workbook.getSheetAt(3);
 			rows = sheet3.getPhysicalNumberOfRows();
 			for (int i = 1; i < rows; i++) {
 				Row row = sheet3.getRow(i);
+				
 				if (row != null && row.getCell(0) != null) {
+					
 					hMap3.put((row.getCell(0).getStringCellValue()).toUpperCase(), row.getCell(1).getDateCellValue());
 				}
 			}
@@ -178,6 +204,7 @@ public class ActivityData {
 				Row row = sheet4.getRow(i);
 				if (row != null && row.getCell(0) != null) {
 					hMap4.put(row.getCell(0).getStringCellValue(), row.getCell(1).getDateCellValue());
+					
 				}
 			}
 
@@ -204,15 +231,35 @@ public class ActivityData {
 
 				if (endDate.isAfter(ActivityData.getTmax())) {
 					ActivityData.setTmax(endDate);
+					
 				}
-
+				
+				
+				
 				for (String drawing : hMap1.get(keyName)) {
-					if (hMap2.containsKey(drawing)) {
+					if (hMap2.containsKey(drawing) && hMap21.get(drawing)!=null) {
 						String wpName = hMap2.get(drawing);
-						LocalDate localDate = new LocalDate(hMap3.get(wpName));
+						LocalDate localDate;
+						
+						Calendar calendar = new GregorianCalendar();
+						calendar.setTime(hMap21.get(drawing));
+						int year = calendar.get(Calendar.YEAR);
+						
+						if(hMap21.containsKey(drawing) && year!=1905 ) {
+							
+							localDate=new LocalDate(hMap21.get(drawing));
+						}else {
+							localDate = new LocalDate(hMap3.get(wpName));
+							
+						}
+						LocalDate idate=new LocalDate(hMap21.get(drawing));
+						LocalDate fdate=new LocalDate(hMap3.get(wpName));
+						//System.out.println(drawing+" : "+hMap21.get(drawing)+" : "+hMap3.get(wpName)+" : "+localDate+" : "+idate.compareTo(localDate)+" : "+idate.isBefore(fdate));
+						
 						WorkPackage wp = new WorkPackage(wpName, localDate);
 						newActivity.addWorkPackage(wp);
 						if (localDate.isAfter(lastDate)) {
+							
 							lastDate = localDate;
 						}
 					}

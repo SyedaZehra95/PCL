@@ -42,7 +42,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	private boolean autoSelectFile = true;
-	private final String FILE_NAME = "data10.xlsx";
+	private final String FILE_NAME = "data13.xlsx";
 
 	public static void main(String[] args) {
 		launch(args);

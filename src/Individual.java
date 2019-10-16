@@ -53,6 +53,7 @@ public class Individual {
 
 	public Individual() {
 		this.genes = new Activity[ActivityData.size()];
+		
 	}
 
 	public Individual(Individual individual) {

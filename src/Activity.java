@@ -56,9 +56,10 @@ public class Activity {
 		int maxHours = ActivityData.getActivity(id).getMaxHoursPossible();
 		int maxDays = 0;
 		if (maxHours == -1) {
-
+			
 			LocalDate currentDate = ActivityData.getActivity(id).getStartDate();
 			LocalDate endDate = ActivityData.getActivity(id).getEndDate();
+			System.out.println(ActivityData.getActivity(id).getName()+" : "+currentDate + " : "+endDate+" : "+currentDate.isBefore(endDate));
 			if (currentDate.isBefore(endDate)) {
 				while (currentDate.isBefore(endDate)) {
 					int dayOfWeek = currentDate.getDayOfWeek();
@@ -70,7 +71,7 @@ public class Activity {
 			}
 			if (maxDays < 1) {
 				System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
-						+ ": Activity start date is after T max: " + ActivityData.getActivity(id).getEndDate());
+						+ ": Activity start date "+ActivityData.getActivity(id).getStartDate()+"is after T max: " + ActivityData.getActivity(id).getEndDate());
 				Platform.runLater(new Runnable() {
 
 					@Override
@@ -87,10 +88,11 @@ public class Activity {
 				ActivityData.setAborted(true);
 			}
 			maxHours = ActivityData.workingHoursPerDay() * maxDays;
-
+				
 			if ((maxHours * ActivityData.RMax()) < ActivityData.getActivity(id).getManHours()) {
+				//System.out.println(maxHours * ActivityData.RMax()+" is less than "+ActivityData.getActivity(id).getManHours());
 				System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
-						+ ": Activity start date is after T max: " + ActivityData.getActivity(id).getEndDate());
+						+ ": Activity start date "+ActivityData.getActivity(id).getStartDate()+" is after T max: " + ActivityData.getActivity(id).getEndDate());
 				Platform.runLater(new Runnable() {
 
 					@Override
@@ -113,7 +115,7 @@ public class Activity {
 			if (Rmin > ActivityData.RMax()) {
 				this.numberOfResources = ActivityData.RMax();
 				System.out.println(
-						"Error in activity " + ActivityData.getActivity(id).getName() + ": Value of Tmax is too low.");
+						"Error in activity " + ActivityData.getActivity(id).getName() + ": Value of Rmax is too low.");
 				Platform.runLater(new Runnable() {
 
 					@Override
@@ -183,6 +185,12 @@ public class Activity {
 			startDate = ActivityData.getActivity(this.id).getStartDate();
 		}
 		return startDate;
+	}
+	public long startDate() {
+		if (startDate == null) {
+			startDate = ActivityData.getActivity(this.id).getStartDate();
+		}
+		return Long.parseLong(startDate.toString());
 	}
 
 	public void setStartDate(LocalDate startDate) {
@@ -270,6 +278,13 @@ public class Activity {
 			this.endDate = ActivityData.getActivity(this.id()).getEndDate();
 		}
 		return this.endDate;
+	}
+	
+	public long endDate() {
+		if (this.endDate == null) {
+			this.endDate = ActivityData.getActivity(this.id()).getEndDate();
+		}
+		return Long.parseLong(this.endDate.toString());
 	}
 
 	public int getMaxHoursPossible() {
