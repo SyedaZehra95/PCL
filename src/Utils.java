@@ -9,7 +9,7 @@ public class Utils {
 		return result;
 	}
 
-	public static String convertFitnessToString(int[] fitness) {
+	public static String convertFitnessToString(double[] fitness) {
 		return fitness[0] + "," + fitness[1] + "," + fitness[2];
 	}
 

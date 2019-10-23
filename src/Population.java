@@ -39,6 +39,7 @@ public class Population {
 	}
 
 	public Individual getIndividual(int id) {
+		
 		return individuals[id];
 	}
 
@@ -160,8 +161,8 @@ public class Population {
 	}
 
 	public void sysout() {
-		int durationFitness = getFittest(0).getFitness()[0];
-		int levelingFitness = getFittest(1).getFitness()[1];
+		double durationFitness = getFittest(0).getFitness()[0];
+		double levelingFitness = getFittest(1).getFitness()[1];
 		System.out.println("Duration: " + durationFitness / 30 + ", Leveling: " + levelingFitness);
 	}
 

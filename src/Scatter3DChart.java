@@ -101,23 +101,24 @@ public class Scatter3DChart {
 		double max2 = 0;
 		ActivityData.resetChart3DData();
 		for (Individual ind : population.getIndividualsArray()) {
-			//Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(ind.getProjectEndWeek()); 
+			//Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(ind.getProjectEndWeek());
+			
 			int week = Integer.parseInt(ind.getProjectEndWeek().replaceAll("[\\s\\-()]", ""));
 			//Date week=date1;
 			
-			int[] fitness = ind.getFitness();
+			double[] fitness = ind.getFitness();
 			if (ActivityData.getMaxPenaltyShow() >= ind.getPenalty()) {
 				
 				XYZDataItem item = new XYZDataItem(ind.getHighestManhours(), ind.getWeightedAverageLateStartDays(),
-						week);
+						fitness[0]);
 				series.add(item);
 				ActivityData.addChart3DData(ind);
 			}
-			if (week < min0) {
-				min0 =week;
+			if (fitness[0] < min0) {
+				min0 =(int)fitness[0];
 			}
-			if (week > max0) {
-				max0 = week;
+			if (fitness[0] > max0) {
+				max0 = (int)fitness[0];
 			}
 			if (ind.getHighestManhours() < min1) {
 				min1 = ind.getHighestManhours();

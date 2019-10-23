@@ -37,7 +37,7 @@ import javafx.scene.paint.Color;
 
 public class Individual {
 	private Activity[] genes;
-	private int[] fitness = new int[] { -1, -1, -1 };
+	private double[] fitness = new double[] { -1, -1, -1 };
 	private int[] resourceLevels;
 	private HashMap<Integer, Integer> weeklyResourceLevels;
 	private HashMap<Integer, String> weekDates;
@@ -102,7 +102,7 @@ public class Individual {
 		return this;
 	}
 
-	public int[] getFitness() {
+	public double[] getFitness() {
 		if (fitness[0] == -1) {
 			lastDate = genes[0].getDeactivationDate();
 
@@ -246,7 +246,7 @@ public class Individual {
 			double sum = 0;
 			double weightedSum = 0;
 			double total = 0;
-			int distancePenalty = 0;
+			double distancePenalty = 0;
 			for (Activity gene : genes) {
 				int days = Days.daysBetween(gene.getStartDate(), gene.getActivationDate()).getDays();
 				sum += days;
@@ -263,7 +263,7 @@ public class Individual {
 	}
 
 	public void resetFitness() {
-		this.fitness = new int[] { -1, -1, -1 };
+		this.fitness = new double[] { -1, -1, -1 };
 	}
 
 	public boolean isSelected() {
@@ -344,9 +344,10 @@ public class Individual {
 		hBox.getChildren().add(printToExcelButton);
 		hBox.setAlignment(Pos.BASELINE_RIGHT);
 		hBox.setPadding(new Insets(10, 60, 10, 10));
+		IndividualGanttChart indg=new IndividualGanttChart();
 
 		VBox vBox = new VBox();
-		vBox.getChildren().addAll(IndividualGanttChart.startGanttChart(this), hBox);
+		vBox.getChildren().addAll(indg.startGanttChart(this,main_vBox), hBox);
 		main_vBox.getChildren().add(3, vBox);
 		main_vBox.getChildren().add(4, createResourceVariationChart());
 		HBox hb = new HBox();
@@ -636,6 +637,6 @@ public class Individual {
 	}
 
 	public String getProjectEndWeek() {
-		return weekDates.get(getFitness()[0] - 1);
+		return weekDates.get(((int)getFitness()[0]) - 1);
 	}
 }

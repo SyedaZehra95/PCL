@@ -46,7 +46,7 @@ public class Scatter2DChart {
 			}
 
 			if (population.getIndividual(i).getFitness()[0] > highestEndDateFitness) {
-				highestEndDateFitness = population.getIndividual(i).getFitness()[0];
+				highestEndDateFitness = (int)population.getIndividual(i).getFitness()[0];
 			}
 		}
 		yAxis.setAutoRanging(false);
@@ -79,7 +79,7 @@ public class Scatter2DChart {
 
 		for (int i = 0; i < population.size(); i++) {
 
-			int fitnessZero = population.getIndividual(i).getFitness()[0];
+			int fitnessZero = (int)population.getIndividual(i).getFitness()[0];
 			int fitnessOne = population.getIndividual(i).getHighestResourceLevel();
 
 			ScatterChart.Data<Number, Number> data = new ScatterChart.Data<Number, Number>(fitnessZero, fitnessOne);
@@ -106,7 +106,7 @@ public class Scatter2DChart {
 		}
 		sc.getData().clear();
 		ScatterChart.Series<Number, Number> series = new ScatterChart.Series<Number, Number>();
-		int fittestDuration = population.getFittest(0).getFitness()[0];
+		int fittestDuration = (int)population.getFittest(0).getFitness()[0];
 //		String name = "";
 //		for (int i = 0; i < durationsDisplayed.length; i++) {
 //			if (i == durationsDisplayed.length - 1) {

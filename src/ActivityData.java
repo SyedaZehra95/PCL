@@ -170,17 +170,15 @@ public class ActivityData {
 					hMap2.put(row.getCell(1).getStringCellValue(), (row.getCell(0).getStringCellValue()).toUpperCase());
 				}
 				
-				//if(i<rows4) {
-					//Row row4 = sheet41.getRow(i);
+			
 				
 					if (row != null && row.getCell(2) != null) {
 						
 						row.getCell(2).setCellType(CellType.NUMERIC);
-						/*System.out.println(row.getCell(2).getDateCellValue());
-						System.out.println(row.getCell(1).getStringCellValue());*/
+						
 						hMap21.put(row.getCell(1).getStringCellValue().toUpperCase(), row.getCell(2).getDateCellValue());
 					}
-				//}
+				
 			}
 			
 			
@@ -237,10 +235,19 @@ public class ActivityData {
 				
 				
 				for (String drawing : hMap1.get(keyName)) {
+					String wpName = hMap2.get(drawing);
+					if(hMap2.containsKey(drawing)&&hMap21.get(drawing)==null) {
+						LocalDate localDate = new LocalDate(hMap3.get(wpName));
+						System.out.println(hMap3.get(wpName));
+						WorkPackage wp = new WorkPackage(wpName, localDate);
+						newActivity.addWorkPackage(wp);
+						if (localDate.isAfter(lastDate)) {
+							
+							lastDate = localDate;
+						}
+					}
 					if (hMap2.containsKey(drawing) && hMap21.get(drawing)!=null) {
-						String wpName = hMap2.get(drawing);
 						LocalDate localDate;
-						
 						Calendar calendar = new GregorianCalendar();
 						calendar.setTime(hMap21.get(drawing));
 						int year = calendar.get(Calendar.YEAR);
@@ -254,7 +261,9 @@ public class ActivityData {
 						}
 						LocalDate idate=new LocalDate(hMap21.get(drawing));
 						LocalDate fdate=new LocalDate(hMap3.get(wpName));
-						//System.out.println(drawing+" : "+hMap21.get(drawing)+" : "+hMap3.get(wpName)+" : "+localDate+" : "+idate.compareTo(localDate)+" : "+idate.isBefore(fdate));
+						System.out.println(drawing+" : "+hMap21.get(drawing)+" : "+hMap3.get(wpName)+" : "+localDate+" : "+idate.compareTo(localDate)+" : "+idate.isBefore(fdate));
+						
+						
 						
 						WorkPackage wp = new WorkPackage(wpName, localDate);
 						newActivity.addWorkPackage(wp);

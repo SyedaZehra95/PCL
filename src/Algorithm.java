@@ -83,10 +83,10 @@ public class Algorithm {
 					}
 
 					Population unionPopulation = new Population(populationSize, false);
-
-					int[] _fitness = population.getIndividual(0).getFitness();
+					
+					double[] _fitness = population.getIndividual(0).getFitness();
 //					tableView.getItems().add(new Progress(0,_fitness[1],_fitness[0],_fitness[2]));
-					final int[] __fitness = population.getIndividual(0).getFitness();
+					final double[] __fitness = population.getIndividual(0).getFitness();
 					int sameFitnessCount = 0;
 					int gen = 1;
 					while (true) {
@@ -106,11 +106,11 @@ public class Algorithm {
 						population = newPopAfterRanking(unionPopulation);
 
 						if (gen % ActivityData.getAccuracyThreshold() == 0) {
-							int[] currentFitness = { population.getFittest(0).getFitness()[0],
+							double[] currentFitness = { population.getFittest(0).getFitness()[0],
 									population.getFittest(1).getFitness()[1], population.getFittest(2).getFitness()[2] };
 							final Individual ind = population.getFittest(2);
-							final int manHrs=population.getFittest(0).getHighestManhours();
-							final int penalty=population.getFittest(0).getPenalty();
+							final int manHrs=population.getFittest(1).getHighestManhours();
+							final int penalty=population.getFittest(1).getPenalty();
 							final int avgFromStart=(int)population.getFittest(2).getWeightedAverageLateStartDays();
 							int i=gen;
 							
@@ -122,7 +122,7 @@ public class Algorithm {
 								tableView.scrollTo(tableView.getItems().size()-2);
 								lineCharts1.addSeries(i, manHrs);
 								//System.out.println(currentFitness[1]);
-								lineCharts2.addSeries(i, currentFitness[0]);
+								lineCharts2.addSeries(i, (int)currentFitness[0]);
 								lineCharts3.addSeries(i, avgFromStart);
 							});
 							//debugTextArea

@@ -1,4 +1,9 @@
 import java.text.DecimalFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -7,33 +12,222 @@ import java.util.List;
 
 import org.joda.time.Days;
 
-import javafx.beans.NamedArg;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Side;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.chart.Axis;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ValueAxis;
-import javafx.scene.chart.XYChart;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import com.flexganttfx.model.Layout;
+import com.flexganttfx.extras.GanttChartStatusBar;
+import com.flexganttfx.extras.GanttChartToolBar;
+import com.flexganttfx.model.Layer;
+import com.flexganttfx.model.layout.GanttLayout;
+import com.flexganttfx.model.Row;
+import com.flexganttfx.model.activity.MutableActivityBase;
+import com.flexganttfx.model.layout.GanttLayout;
+import com.flexganttfx.view.GanttChart;
+import com.flexganttfx.view.GanttChart.DisplayMode;
+import com.flexganttfx.view.graphics.GraphicsBase;
+import com.flexganttfx.view.graphics.renderer.ActivityBarRenderer;
+import com.flexganttfx.view.timeline.Timeline;
 
-public class IndividualGanttChart<X, Y> extends XYChart<X, Y> {
+public class IndividualGanttChart {
+	/*
+	 * Plain data object storing dummy Pack information.
+	 */
+	class PackageData {
 
-	static IndividualGanttChart<Number, String> chart;
+		String packageName;
+		Instant startTime = Instant.now();
+		Instant endTime = Instant.now().plus(Duration.ofHours(6));
+
+		public PackageData(String packageName, LocalDate startTime,LocalDate endTime) {
+			this.packageName = packageName;
+			this.startTime = startTime.atStartOfDay().toInstant(ZoneOffset.UTC);
+			this.endTime = endTime.atStartOfDay().toInstant(ZoneOffset.UTC);
+		}
+	}
+
+	/*
+	 * The activity representing the Pack. This object will be rendered as a
+	 * bar in the graphics view of the Gantt chart. The Pack is mutable, so
+	 * the user will be able to interact with it.
+	 */
+	class Pack extends MutableActivityBase<PackageData> {
+		public Pack(PackageData data) {
+			setUserObject(data);
+			setName(data.packageName);
+			setStartTime(data.startTime);
+			setEndTime(data.endTime);
+		}
+	}
+
+	/*
+	 * Each row represents an WorkPackage in this example. The activities shown on
+	 * the row are of type Pack.
+	 */
+	class WorkPackage extends Row<WorkPackage, WorkPackage, Pack> {
+		public WorkPackage(String name) {
+			super(name);
+		}
+	}
+
+	public GanttChart start(Individual individual,VBox main_vbox) {
+
+		// Create the Gantt chart
+		GanttChart<WorkPackage> gantt = new GanttChart<WorkPackage>(new WorkPackage(
+				"ROOT"));
+
+		Layer layer = new Layer("Packs");
+		gantt.getLayers().add(layer);
+		
+		/*WorkPackage b747 = new WorkPackage("B747");
+		b747.addActivity(layer, new Pack(new PackageData("Pack1", 1)));
+		b747.addActivity(layer, new Pack(new PackageData("Pack2", 2)));
+		b747.addActivity(layer, new Pack(new PackageData("Pack3", 3)));
+		WorkPackage a380 = new WorkPackage("A380");
+		a380.addActivity(layer, new Pack(new PackageData("Pack1", 1)));
+		a380.addActivity(layer, new Pack(new PackageData("Pack2", 2)));
+		a380.addActivity(layer, new Pack(new PackageData("Pack3", 3)));*/
+		int stepSize = (ActivityData.RMax() - ActivityData.RMin()) / 4;
+		for (int i = 0; i < ActivityData.size(); i++) {
+			
+			String packageName = ActivityData.getActivity(i).getName();
+			
+			WorkPackage ac = new WorkPackage(packageName);
+			
+			boolean show = false;
+			boolean[] checkBoxTruth = ActivityData.getCheckBoxTruth();
+			
+			String color = "status-8";
+			int res = individual.getGene(i).getNumberOfResources();
+			if (res == ActivityData.RMin()) {
+				color = "status-4";
+				if (checkBoxTruth[0]) {
+					show = true;
+				}
+			} else if (res < ActivityData.RMin() + stepSize) {
+				color = "status-5";
+				if (checkBoxTruth[1]) {
+					show = true;
+				}
+			} else if (res < ActivityData.RMin() + (2 * stepSize)) {
+				color = "status-6";
+				if (checkBoxTruth[2]) {
+					show = true;
+				}
+			} else if (res < ActivityData.RMin() + (3 * stepSize)) {
+				color = "status-7";
+				if (checkBoxTruth[3]) {
+					show = true;
+				}
+			} else {
+				color = "status-8";
+				if (checkBoxTruth[4]) {
+					show = true;
+				}
+			}
+			LocalDate baseDate= LocalDate.of(ActivityData.getBaseDate().getYear(),ActivityData.getBaseDate().getMonthOfYear(), ActivityData.getBaseDate().getDayOfMonth());
+			LocalDate endDate= LocalDate.of(individual.getGene(i).getEndDate().getYear(),individual.getGene(i).getEndDate().getMonthOfYear(), individual.getGene(i).getEndDate().getDayOfMonth());
+			LocalDate startDate= LocalDate.of(individual.getGene(i).getStartDate().getYear(),individual.getGene(i).getStartDate().getMonthOfYear(), individual.getGene(i).getStartDate().getDayOfMonth());
+			LocalDate activeDate= LocalDate.of(individual.getGene(i).getActivationDate().getYear(),individual.getGene(i).getActivationDate().getMonthOfYear(), individual.getGene(i).getActivationDate().getDayOfMonth());
+			LocalDate deactiveDate= LocalDate.of(individual.getGene(i).getDeactivationDate().getYear(),individual.getGene(i).getDeactivationDate().getMonthOfYear(), individual.getGene(i).getDeactivationDate().getDayOfMonth());
+			double resources=0;
+			if(activeDate.isBefore(deactiveDate)) {
+				resources=individual.getGene(i).getNumberOfResources()*ActivityData.workingHoursPerDay();
+			}
+			System.out.println(baseDate+" : "+startDate+" : "+endDate+" : "+activeDate);
+			ac.addActivity(layer, new Pack(new PackageData("Tmin",startDate,startDate.plusDays(1))));
+			ac.addActivity(layer, new Pack(new PackageData("Resource="+(individual.getGene(i).getNumberOfResources()*ActivityData.workingHoursPerDay()), activeDate,deactiveDate)));
+			ac.addActivity(layer, new Pack(new PackageData("Tmax", endDate.minusDays(1),endDate)));
+			layer.setVisible(true);
+			
+			gantt.getRoot().getChildren().add(ac);
+			/*series.getData()
+					.add(new XYChart.Data(
+							Days.daysBetween(ActivityData.getBaseDate(), individual.getGene(i).getEndDate()).getDays(),
+							conns[k], new ExtraData(1, "status-black")));
+
+			int start = Days.daysBetween(ActivityData.getBaseDate(), individual.getGene(i).getStartDate()).getDays();
+
+			series.getData().add(new XYChart.Data(start, conns[k], new ExtraData(1, "status-black")));
+
+			if (show) {
+				int activateDate = Days
+						.daysBetween(ActivityData.getBaseDate(), individual.getGene(i).getActivationDate()).getDays();
+				XYChart.Data<Number, String> data = new XYChart.Data(activateDate, conns[k],
+						new ExtraData((int) individual.getGene(i).getDurationInDays() + 1, color));
+				series.getData().add(data);
+				data.getNode().setOnMouseClicked((e) -> {
+					showDetailsPage(data.getXValue(), data.getYValue());
+				});
+			}
+			k++;
+			System.out.println(series.getData());*/
+			
+		}
+
+		
+
+		
+
+		Timeline timeline = gantt.getTimeline();
+		timeline.showTemporalUnit(ChronoUnit.HOURS, 10);
+
+		GraphicsBase<WorkPackage> graphics = gantt.getGraphics();
+		graphics.setActivityRenderer(Pack.class, GanttLayout.class,
+				new ActivityBarRenderer<>(graphics, "PackRenderer"));
+		graphics.showEarliestActivities();
+		gantt.setDisplayMode(DisplayMode.STANDARD);
+		gantt.setShowTreeTable(true);
+		gantt.requestFocus();
+		System.out.println(gantt.getTooltip());
+		//gantt.setShowDetail(true);
+		Platform.runLater(()->{
+			Screen screen = Screen.getPrimary();
+			AnchorPane root = new AnchorPane();
+			
+			Stage stage=new Stage();
+			
+			
+			Scene scene = new Scene(root);
+			VBox box =new VBox();
+			box.getChildren().addAll(new GanttChartToolBar(gantt),gantt,new GanttChartStatusBar(gantt));
+			box.setMinWidth(screen.getVisualBounds().getWidth());
+			box.setMinHeight(screen.getVisualBounds().getHeight());
+			root.getChildren().add(box);
+			//main_vbox.getChildren().add(gantt);
+			stage.setScene(scene);
+			stage.sizeToScene();
+			stage.centerOnScreen();
+			stage.setMaximized(true);
+			stage.show();
+		});
+		return gantt;
+	}
+	
+	public GanttChart startGanttChart(Individual individual,VBox main_vBox) {
+
+		/*final NumberAxis xAxis = new NumberAxis();
+		final CategoryAxis yAxis = new CategoryAxis();
+		chart = new IndividualGanttChart<Number, String>(xAxis, yAxis);
+		return chart.run(individual);*/
+		GanttChart gantt = start(individual,main_vBox);
+		
+		
+		return gantt;
+
+		
+	}
+
+	/*static IndividualGanttChart<Number, String> chart;
 	private static DecimalFormat df = new DecimalFormat("0.00");
 
 	public static Node startGanttChart(Individual individual) {
@@ -133,8 +327,9 @@ public class IndividualGanttChart<X, Y> extends XYChart<X, Y> {
 				});
 			}
 			k++;
+			System.out.println(series.getData());
 		}
-
+		
 		yAxis.setCategories(FXCollections.<String>observableArrayList(Arrays.asList(conns)));
 		chart.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		chart.setMinHeight(chart.getData().size() * 40);
@@ -399,5 +594,5 @@ public class IndividualGanttChart<X, Y> extends XYChart<X, Y> {
 			if (yData != null)
 				ya.invalidateRange(yData);
 		}
-	}
+	}*/
 }
