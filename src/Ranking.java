@@ -78,7 +78,7 @@ public class Ranking {
 		int flag;
 		double value1 = 0, value2 = 0;
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			value1 = chromosome1.getFitness()[i];
 			value2 = chromosome2.getFitness()[i];
 

@@ -10,7 +10,7 @@ public class Utils {
 	}
 
 	public static String convertFitnessToString(double[] fitness) {
-		return fitness[0] + "," + fitness[1] + "," + fitness[2];
+		return fitness[0] + "," + fitness[1] + "," + fitness[2] + "," + fitness[3];
 	}
 
 	public static boolean isWorkingDay(LocalDate date) {

@@ -39,7 +39,7 @@ public class Population {
 	}
 
 	public Individual getIndividual(int id) {
-		
+
 		return individuals[id];
 	}
 
@@ -70,13 +70,11 @@ public class Population {
 			main_vBox.getChildren().remove(2);
 		}
 		/*
-		while (topHBox.getChildren().size() > 1) {
-			topHBox.getChildren().remove(1);
-		}
-
-		while (main_vBox.getChildren().size() > 2) {
-			main_vBox.getChildren().remove(2);
-		}*/
+		 * while (topHBox.getChildren().size() > 1) { topHBox.getChildren().remove(1); }
+		 * 
+		 * while (main_vBox.getChildren().size() > 2) {
+		 * main_vBox.getChildren().remove(2); }
+		 */
 
 //		int fittestDuration = this.getFittest(0).getFitness()[0];
 //		ArrayList<Integer> durations = new ArrayList<>();
@@ -91,7 +89,7 @@ public class Population {
 //		for (int i = 0; i < durations.size(); i++) {
 //			chartDurations[i] = durations.get(i);
 //		}
-		
+
 //		topTilePane.getChildren().add(createScatterPlot(main_vBox, topTilePane));
 		VBox vBox = new VBox();
 
@@ -132,8 +130,8 @@ public class Population {
 
 	@SuppressWarnings("unchecked")
 	private Chart3DViewer createScatterPlot3D(VBox main_vBox, HBox topTilePane) {
-		
-		Scatter3DChart sChart = new Scatter3DChart();
+
+		Scatter3DChart sChart = new Scatter3DChart(size());
 		sChart.run(this);
 		Chart3DViewer v = new Chart3DViewer(sChart.getChart());
 		v.addEventHandler(FXChart3DMouseEvent.MOUSE_CLICKED, (FXChart3DMouseEvent event) -> {

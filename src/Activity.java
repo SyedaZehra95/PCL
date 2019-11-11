@@ -21,6 +21,7 @@ public class Activity {
 	private double ratioOfLastDayUsed = -1;
 	private int maxHoursPossible = -1;
 	private int lowestRMinPossible = -1;
+	private int Rmax = -1;
 	private ArrayList<WorkPackage> workPackages = new ArrayList<>();
 
 	public void addWorkPackage(WorkPackage wp) {
@@ -52,14 +53,16 @@ public class Activity {
 		}
 
 		this.id = id;
+		this.setSystemId(ActivityData.getActivity(id).getSystemId());
 
 		int maxHours = ActivityData.getActivity(id).getMaxHoursPossible();
 		int maxDays = 0;
 		if (maxHours == -1) {
-			
+
 			LocalDate currentDate = ActivityData.getActivity(id).getStartDate();
 			LocalDate endDate = ActivityData.getActivity(id).getEndDate();
-			System.out.println(ActivityData.getActivity(id).getName()+" : "+currentDate + " : "+endDate+" : "+currentDate.isBefore(endDate));
+//			System.out.println(ActivityData.getActivity(id).getName() + " : " + currentDate + " : " + endDate + " : "
+//					+ currentDate.isBefore(endDate));
 			if (currentDate.isBefore(endDate)) {
 				while (currentDate.isBefore(endDate)) {
 					int dayOfWeek = currentDate.getDayOfWeek();
@@ -71,7 +74,8 @@ public class Activity {
 			}
 			if (maxDays < 1) {
 				System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
-						+ ": Activity start date "+ActivityData.getActivity(id).getStartDate()+"is after T max: " + ActivityData.getActivity(id).getEndDate());
+						+ ": Activity start date " + ActivityData.getActivity(id).getStartDate() + "is after T max: "
+						+ ActivityData.getActivity(id).getEndDate());
 				Platform.runLater(new Runnable() {
 
 					@Override
@@ -88,56 +92,37 @@ public class Activity {
 				ActivityData.setAborted(true);
 			}
 			maxHours = ActivityData.workingHoursPerDay() * maxDays;
-				
-			if ((maxHours * ActivityData.RMax()) < ActivityData.getActivity(id).getManHours()) {
-				//System.out.println(maxHours * ActivityData.RMax()+" is less than "+ActivityData.getActivity(id).getManHours());
-				System.out.println("Error in activity " + ActivityData.getActivity(id).getName()
-						+ ": Activity start date "+ActivityData.getActivity(id).getStartDate()+" is after T max: " + ActivityData.getActivity(id).getEndDate());
-				Platform.runLater(new Runnable() {
-
-					@Override
-					public void run() {
-						Alert alert = new Alert(AlertType.ERROR);
-						alert.setTitle("No solution possible");
-						alert.setHeaderText("Error 1 in package id: " + id);
-						alert.setContentText("Error in package " + ActivityData.getActivity(id).getName()
-								+ ": No solution possible with given Rmax value.");
-						alert.showAndWait();
-					}
-				});
-				ActivityData.setAborted(true);
-			}
 			ActivityData.getActivity(id).setMaxHoursPossible(maxHours);
 		}
 		int Rmin = ActivityData.getActivity(id).getLowestRMinPossible();
 		if (Rmin == -1) {
 			Rmin = (int) Math.ceil(ActivityData.getActivity(id).getManHours() / (double) (maxHours));
-			if (Rmin > ActivityData.RMax()) {
-				this.numberOfResources = ActivityData.RMax();
-				System.out.println(
-						"Error in activity " + ActivityData.getActivity(id).getName() + ": Value of Rmax is too low.");
-				Platform.runLater(new Runnable() {
-
-					@Override
-					public void run() {
-						Alert alert = new Alert(AlertType.ERROR);
-						alert.setTitle("No solution possible");
-						alert.setHeaderText("Error 1 in package id: " + id);
-						alert.setContentText("Error in package " + ActivityData.getActivity(id).getName()
-								+ ": No solution possible with given Rmax value.");
-						alert.showAndWait();
-					}
-				});
-				ActivityData.setAborted(true);
-			} else {
-				if (ActivityData.RMin() > Rmin) {
-					Rmin = ActivityData.RMin();
-				}
+			if (ActivityData.RMin() > Rmin) {
+				Rmin = ActivityData.RMin();
 			}
 			ActivityData.getActivity(id).setLowestRMinPossible(Rmin);
 		}
 
-		this.numberOfResources = ThreadLocalRandom.current().nextInt(Rmin, ActivityData.RMax() + 1);
+		double manhours = ActivityData.getActivity(id).getManHours();
+		int[] percentCompletionSlabs = ActivityData.getPercentCompletionSlabs();
+		double[] percentCompletionAllowed = ActivityData.getPercentCompletionAllowed();
+
+		int newRmax = -1;
+		for (int i = 0; i < percentCompletionSlabs.length; i++) {
+			if (manhours < percentCompletionSlabs[i]) {
+				double percentCompletion = percentCompletionAllowed[i];
+				newRmax = (int) ((manhours * (percentCompletion / 100)) / ActivityData.workingHoursPerDay());
+				break;
+			}
+		}
+
+		newRmax = (newRmax == -1)
+				? (int) ((manhours * (percentCompletionAllowed[percentCompletionAllowed.length - 1] / 100))
+						/ ActivityData.workingHoursPerDay())
+				: newRmax;
+		newRmax = (newRmax > Rmin) ? newRmax : Rmin;
+		ActivityData.getActivity(id).setRmax(newRmax);
+		this.numberOfResources = ThreadLocalRandom.current().nextInt(Rmin, newRmax + 1);
 		this.activationDate = generateRandomT(maxHours);
 		generateRandomT(maxHours);
 	}
@@ -186,6 +171,7 @@ public class Activity {
 		}
 		return startDate;
 	}
+
 	public long startDate() {
 		if (startDate == null) {
 			startDate = ActivityData.getActivity(this.id).getStartDate();
@@ -256,15 +242,16 @@ public class Activity {
 		if (maxDays < 1) {
 			return false;
 		}
+		int rmax = ActivityData.getActivity(this.id()).getRmax();
 		int maxHours = ActivityData.workingHoursPerDay() * maxDays;
 		int Rmin = (int) Math.ceil(this.getManHours() / (double) (maxHours));
-		if (Rmin > ActivityData.RMax()) {
+		if (Rmin > rmax) {
 			return false;
 		}
 		if (ActivityData.RMin() > Rmin) {
 			Rmin = ActivityData.RMin();
 		}
-		this.numberOfResources = ThreadLocalRandom.current().nextInt(Rmin, ActivityData.RMax() + 1);
+		this.numberOfResources = ThreadLocalRandom.current().nextInt(Rmin, rmax + 1);
 		this.activationDate = gene.getDeactivationDate();
 		return true;
 	}
@@ -279,7 +266,7 @@ public class Activity {
 		}
 		return this.endDate;
 	}
-	
+
 	public long endDate() {
 		if (this.endDate == null) {
 			this.endDate = ActivityData.getActivity(this.id()).getEndDate();
@@ -312,5 +299,13 @@ public class Activity {
 
 	public void setSystemId(String systemId) {
 		this.systemId = systemId;
+	}
+
+	public int getRmax() {
+		return Rmax;
+	}
+
+	public void setRmax(int rmax) {
+		Rmax = rmax;
 	}
 }
