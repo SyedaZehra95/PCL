@@ -1,4 +1,8 @@
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -43,6 +47,7 @@ public class Main extends Application {
 
 	private boolean autoSelectFile = true;
 	private final String FILE_NAME = "data15.xlsx";
+	private int total_solution=0;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -100,7 +105,8 @@ public class Main extends Application {
 				}
 			}
 		});
-
+		
+		
 		main_vBox.getChildren().addAll(hbSelectButton);
 		ScrollPane scroll = new ScrollPane();
 		scroll.setContent(main_vBox);
@@ -164,11 +170,14 @@ public class Main extends Application {
 		labelFileName.setTextFill(Color.web("#ffffff"));
 		labelFileName.setFont(new Font("Arial", 22));
 		labelFileName.setPadding(new Insets(0, 10, 0, 10));
+		
 
 		hbSelectButton.getChildren().add(labelFileName);
+		
 		GridPane grid_config = new GridPane();
 
 		int position = 0;
+		
 		grid_config.add(new Label("No. of working hours per day"), 0, position);
 		grid_config.add(workingHoursTextField, 1, position);
 		position++;
@@ -194,7 +203,19 @@ public class Main extends Application {
 		HBox hbButton = new HBox(buttonRunOptimization);
 		hbButton.setPadding(new Insets(10, 0, 0, 0));
 		grid_config.add(hbButton, 1, position);
+		
+		//process_time.setTextFill(Color.web("#ffffff"));
+		//process_time.setFont(new Font("Arial", 22));
+		//process_time.setPadding(new Insets(0, 10, 0, 160));
+		//grid_config.add(process_time, 3, position);
 		position++;
+		Label solution_count=new Label();
+		grid_config.add(solution_count,0,position);
+		//Label process_time=new Label();
+		//grid_config.add(process_time,1,position);
+		position++;
+		
+		
 		buttonRunOptimization.setOnAction(new EventHandler<ActionEvent>() {
 			@SuppressWarnings("unused")
 			@Override
@@ -203,6 +224,10 @@ public class Main extends Application {
 				
 				ProgressIndicator pi = new ProgressIndicator();
 				piBox.getChildren().add(pi);
+				Label process_time=new Label();
+				piBox.getChildren().add(process_time);
+				piBox.setMargin(process_time, new Insets(15,5,5,5));
+				
 				progress[0]=1;
 				
 				piBox.setMargin(pi, new Insets(5,5,5,135));
@@ -217,7 +242,18 @@ public class Main extends Application {
 
 				new Thread(() -> {
 					Algorithm algorithm = new Algorithm();
-					Population resultPopulation = algorithm.autoRun(tableView, main_vBox, topHBox);
+					
+					
+					Population resultPopulation = algorithm.autoRun(tableView, main_vBox, topHBox,process_time);
+					
+				   
+					Platform.runLater(()->{
+						solution_count.setText("Number of solutions: "+tableView.getItems().size()*resultPopulation.size());
+						
+					});
+				
+					
+					System.out.println("Population"+tableView.getItems().size());
 					
 					if(resultPopulation==null) {
 						System.out.println("printing pop"+ resultPopulation);
@@ -275,6 +311,7 @@ public class Main extends Application {
 		
 		autoResizeColumns(tableView);
 		VBox tableArea = new VBox(tableView);
+		
 		
 		//tableArea.setPadding(new Insets(10, 0, 0, 0));
 		

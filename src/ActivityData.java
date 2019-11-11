@@ -238,7 +238,7 @@ public class ActivityData {
 					String wpName = hMap2.get(drawing);
 					if(hMap2.containsKey(drawing)&&hMap21.get(drawing)==null) {
 						LocalDate localDate = new LocalDate(hMap3.get(wpName));
-						System.out.println(hMap3.get(wpName));
+						//System.out.println(hMap3.get(wpName));
 						WorkPackage wp = new WorkPackage(wpName, localDate);
 						newActivity.addWorkPackage(wp);
 						if (localDate.isAfter(lastDate)) {
@@ -261,7 +261,7 @@ public class ActivityData {
 						}
 						LocalDate idate=new LocalDate(hMap21.get(drawing));
 						LocalDate fdate=new LocalDate(hMap3.get(wpName));
-						System.out.println(drawing+" : "+hMap21.get(drawing)+" : "+hMap3.get(wpName)+" : "+localDate+" : "+idate.compareTo(localDate)+" : "+idate.isBefore(fdate));
+						//System.out.println(drawing+" : "+hMap21.get(drawing)+" : "+hMap3.get(wpName)+" : "+localDate+" : "+idate.compareTo(localDate)+" : "+idate.isBefore(fdate));
 						
 						
 						

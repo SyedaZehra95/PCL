@@ -1,8 +1,14 @@
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.junit.rules.Stopwatch;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -19,6 +25,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 public class Algorithm {
 
@@ -29,9 +36,14 @@ public class Algorithm {
 
 	private int numIterations = 1;
 	private final boolean DEBUG = false;
+	private int min=0;
+	private int sec=0;
 	
 
-	public Population autoRun(TableView tableView, VBox main_vBox, HBox topHBox) {
+	public Population autoRun(TableView tableView, VBox main_vBox, HBox topHBox,Label process_time) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
+		
+		
 		
 		
 		try {
@@ -61,6 +73,7 @@ public class Algorithm {
 			if (objectiveId == 100) {
 				ArrayList<Individual> solutions = new ArrayList<>();
 				for (int itr = 0; itr < numIterations; itr++) {
+					LocalDateTime start_time = LocalDateTime.now(); 
 					if (ActivityData.isAborted()) {
 						return null;
 					}
@@ -117,8 +130,18 @@ public class Algorithm {
 							//Individual inds=new Individual();
 							//System.out.println();
 							tableView.getItems().add(new Progress(gen,manHrs,penalty,ind.getProjectEndWeek(),avgFromStart ));
+							LocalDateTime end_time = LocalDateTime.now();
+							long diff = ChronoUnit.SECONDS.between(start_time,end_time);
+							if(diff>60) {
+								this.min=(int)diff/60;
+								this.sec=(int)diff%60;
+							}else {
+								this.sec=(int)diff;
+							}
+							Text sub = new Text("min");
 							
 							Platform.runLater(() -> {
+								process_time.setText(this.min+" : "+this.sec+" sec");
 								tableView.scrollTo(tableView.getItems().size()-2);
 								lineCharts1.addSeries(i, manHrs);
 								//System.out.println(currentFitness[1]);

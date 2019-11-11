@@ -3,6 +3,8 @@ import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 
+import javax.swing.WindowConstants;
+
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -20,7 +22,9 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -32,6 +36,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
@@ -152,33 +157,62 @@ public class Individual {
 				if (resourceLevels[i] == -1) {
 					if (!isWeekendStarted) {
 						weeklyResourceLevels.put(currentWeek, weeklyResourceTotal);
+						
 						if (currentWeek != 0) {
+							
 							LocalDate weekDate = ActivityData.getBaseDate().plusDays(i);
 							weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
 							weekDates.put(currentWeek, weekDate.toString());
+							
 						} else {
 							LocalDate weekDate = ActivityData.getBaseDate();
 							weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
 							weekDates.put(currentWeek, weekDate.toString());
+							
 						}
 						isWeekendStarted = true;
 						weeklyResourceTotal = 0;
 						currentWeek++;
 					}
-				} else {
+				} else if((ActivityData.getNumberOfDaysPerWeek()==7) && (resourceLevels[i]%7==0)) {
+					if (!isWeekendStarted) {
+						weeklyResourceLevels.put(currentWeek, weeklyResourceTotal);
+						
+						if (currentWeek != 0) {
+							
+							LocalDate weekDate = ActivityData.getBaseDate().plusDays(i);
+							weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
+							weekDates.put(currentWeek, weekDate.toString());
+							
+						} else {
+							LocalDate weekDate = ActivityData.getBaseDate();
+							weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
+							weekDates.put(currentWeek, weekDate.toString());
+							
+						}
+						//isWeekendStarted = true;
+						weeklyResourceTotal = 0;
+						currentWeek++;
+					}
+				}
+				else {
 					isWeekendStarted = false;
 					weeklyResourceTotal += resourceLevels[i];
+					
 				}
 			}
 
 			if (weeklyResourceTotal != 0) {
 				weeklyResourceLevels.put(currentWeek, weeklyResourceTotal);
+				
 				LocalDate weekDate = ActivityData.getBaseDate().plusDays(i);
 				weekDate = weekDate.plusDays(7 - weekDate.getDayOfWeek());
 				weekDates.put(currentWeek, weekDate.toString());
 			}
+			
 
 			fitness[0] = weeklyResourceLevels.size();
+			//System.out.println("resourceLevel"+weeklyResourceLevels);
 		}
 
 		if (fitness[1] == -1) {
@@ -344,10 +378,15 @@ public class Individual {
 		hBox.getChildren().add(printToExcelButton);
 		hBox.setAlignment(Pos.BASELINE_RIGHT);
 		hBox.setPadding(new Insets(10, 60, 10, 10));
+		/*GanttChart example=new GanttChart("title",this);
+		example.setSize(1000, 1000);
+        example.setLocationRelativeTo(null);
+        //example.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        example.setVisible(true);*/
 		IndividualGanttChart indg=new IndividualGanttChart();
-
 		VBox vBox = new VBox();
 		vBox.getChildren().addAll(indg.startGanttChart(this,main_vBox), hBox);
+		//vBox.getChildren().addAll( hBox);
 		main_vBox.getChildren().add(3, vBox);
 		main_vBox.getChildren().add(4, createResourceVariationChart());
 		HBox hb = new HBox();
@@ -539,28 +578,70 @@ public class Individual {
 		}
 	}
 
-	private NumberAxis createYaxis() {
+	private NumberAxis createYaxis(String title) {
 		final NumberAxis axis = new NumberAxis();
 		axis.setMinorTickCount(10);
-		axis.setLabel("Man-hours");
+		axis.setLabel(title);
 		return axis;
 	}
 
 	private CategoryAxis createXaxis() {
 		final CategoryAxis axis = new CategoryAxis();
 		axis.setLabel("Weeks");
-		axis.setTickLabelGap(10);
+		//axis.setTickLabelGap(10);
 
 		return axis;
 	}
-
+	
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private BarChart<String, Number> createResourceVariationChart() {
+	public LineChart<String, Number> createLineResourceVariationChart() {
 
-		final BarChart<String, Number> chart = new BarChart<>(createXaxis(), createYaxis());
+		final LineChart<String, Number> chart = new LineChart<>(createXaxis(), createYaxis("Cumulative Man-hours"));
 
 		chart.setMinHeight(400);
-		chart.setPadding(new Insets(0, 0, 0, 175));
+		chart.setMaxWidth(800);
+		chart.setPadding(new Insets(0, -75, 95,45));
+		
+		@SuppressWarnings("rawtypes")
+		XYChart.Series series1 = new XYChart.Series();
+
+		int i = 0;
+		int rLevel=0;
+		while (i < this.weeklyResourceLevels.size()) {
+			
+			series1.getData().add(new XYChart.Data(weekDates.get(i),rLevel));
+			rLevel+=this.weeklyResourceLevels.get(i) * ActivityData.workingHoursPerDay();
+			i++;
+		}
+
+		int totalDays = i * 7;
+		totalDays = ((totalDays / 25) + 1) * 25;
+
+		int totalWeeks = totalDays / 7;
+		LocalDate curDate = new LocalDate(weekDates.get(i - 1));
+		while (i < totalWeeks) {
+			curDate = curDate.plusWeeks(1);
+			series1.getData().add(new XYChart.Data(curDate.toString(), rLevel));
+			i++;
+		}
+		chart.getYAxis().setSide(Side.RIGHT);
+		chart.getXAxis().setTickLabelsVisible(false);
+		chart.getXAxis().setTickMarkVisible(false);
+		chart.getXAxis().setLabel("");
+		series1.setName("Resource level");
+		chart.getData().addAll(series1);
+		chart.setLegendVisible(false);
+		return chart;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public BarChart<String, Number> createResourceVariationChart() {
+
+		final BarChart<String, Number> chart = new BarChart<>(createXaxis(), createYaxis("Man-hours"));
+
+		chart.setMinHeight(400);
+		chart.setMaxWidth(800);
 
 		@SuppressWarnings("rawtypes")
 		XYChart.Series series1 = new XYChart.Series();
@@ -589,6 +670,30 @@ public class Individual {
 		chart.setLegendVisible(false);
 		return chart;
 	}
+	
+    public StackPane layerCharts(final XYChart<String, Number> ... charts) {
+        for (int i = 1; i < charts.length; i++) {
+            configureOverlayChart(charts[i]);
+        }
+
+        StackPane stackpane = new StackPane();
+        stackpane.getChildren().addAll(charts);
+
+        return stackpane;
+    }
+    
+    private void configureOverlayChart(final XYChart<String, Number> chart) {
+        chart.setAlternativeRowFillVisible(false);
+        chart.setAlternativeColumnFillVisible(false);
+        chart.setHorizontalGridLinesVisible(false);
+        chart.setVerticalGridLinesVisible(false);
+        chart.getXAxis().setVisible(false);
+        chart.getYAxis().setVisible(false);
+        
+        chart.getStylesheets().add("overlay.css");
+    }
+     
+        
 
 	public void setRank(int r) {
 		this.rank = r;

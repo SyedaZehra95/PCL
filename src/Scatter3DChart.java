@@ -42,6 +42,7 @@ public class Scatter3DChart {
 	private Chart3D sc;
 	private XYZSeriesCollection dataset;
 	private XYZPlot plot;
+	private int num_sol=0;
 	
 	Function3D function = new Function3D() {
         @Override
@@ -57,12 +58,13 @@ public class Scatter3DChart {
 	
 	
 
-	Scatter3DChart() {
+	Scatter3DChart(Population population) {
 		/*xAxis = new NumberAxis3D("Man-hours per week");
 		yAxis = new NumberAxis3D("Avg no. of days from T-start");
 		zAxis = new NumberAxis3D("End week (weeks)");*/
+		this.num_sol=population.getIndividualsArray().length;
 		dataset = new XYZSeriesCollection();
-		sc =Chart3DFactory.createScatterChart("Optimal Solution", null, dataset, "Man-hours per week","Avg no. of days from T-start", "End week (weeks)");
+		sc =Chart3DFactory.createScatterChart("Optimal Solution", this.num_sol+" solutions", dataset, "Man-hours per week","Avg no. of days from T-start", "End week (weeks)");
 		
 		 
 //		renderer.setColors(Colors.createIntenseColors());
@@ -100,6 +102,7 @@ public class Scatter3DChart {
 		double min2 = ActivityData.getErrorFitness();
 		double max2 = 0;
 		ActivityData.resetChart3DData();
+		
 		for (Individual ind : population.getIndividualsArray()) {
 			//Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(ind.getProjectEndWeek());
 			
@@ -114,6 +117,7 @@ public class Scatter3DChart {
 				series.add(item);
 				ActivityData.addChart3DData(ind);
 			}
+			
 			if (fitness[0] < min0) {
 				min0 =(int)fitness[0];
 			}

@@ -133,7 +133,7 @@ public class Population {
 	@SuppressWarnings("unchecked")
 	private Chart3DViewer createScatterPlot3D(VBox main_vBox, HBox topTilePane) {
 		
-		Scatter3DChart sChart = new Scatter3DChart();
+		Scatter3DChart sChart = new Scatter3DChart(this);
 		sChart.run(this);
 		Chart3DViewer v = new Chart3DViewer(sChart.getChart());
 		v.addEventHandler(FXChart3DMouseEvent.MOUSE_CLICKED, (FXChart3DMouseEvent event) -> {
