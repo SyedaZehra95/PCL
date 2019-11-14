@@ -202,6 +202,9 @@ public class Activity {
 		if (durationInDays == -1) {
 			durationInDays = this.getManHours() / (double) (ActivityData.workingHoursPerDay() * this.numberOfResources);
 			ratioOfLastDayUsed = durationInDays - (int) durationInDays;
+			if (ratioOfLastDayUsed == 0) {
+				ratioOfLastDayUsed = 1;
+			}
 			durationInDays += Utils.getNumberOfNonWorkingDays(activationDate, (int) Math.ceil(durationInDays));
 		}
 		return durationInDays;
