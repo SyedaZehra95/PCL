@@ -74,6 +74,10 @@ public class Individual {
 	public void setGene(int id, Activity gene) {
 		this.genes[id] = gene;
 	}
+	
+	public Activity[] getGenes() {
+		return this.genes;
+	}
 
 	public Activity getGene(int id) {
 		return this.genes[id];
@@ -287,12 +291,15 @@ public class Individual {
 			for (Activity gene : genes) {
 				String systemId = gene.getSystemId();
 				SystemObj systemObj = ActivityData.getSystems().get(systemId);
+				LocalDate actDate = gene.getActivationDate();
 				LocalDate deactDate = gene.getDeactivationDate();
 				if (!systemGenes.containsKey(systemId)) {
 					SystemObj obj = systemObj.clone();
+					obj.plusActivationDate(actDate);
 					obj.plusDeactivationDate(deactDate);
 					systemGenes.put(systemId, obj);
 				} else {
+					systemGenes.get(systemId).plusActivationDate(actDate);
 					systemGenes.get(systemId).plusDeactivationDate(deactDate);
 					systemGenes.get(systemId).plusResources(gene.getManHours());
 				}
@@ -394,6 +401,7 @@ public class Individual {
 		hBox.setAlignment(Pos.BASELINE_RIGHT);
 		hBox.setPadding(new Insets(10, 60, 10, 10));
 		IndividualGanttChart indg = new IndividualGanttChart();
+		//SystemGantt indg = new SystemGantt();
 
 		VBox vBox = new VBox();
 		vBox.getChildren().addAll(indg.startGanttChart(this, main_vBox), hBox);

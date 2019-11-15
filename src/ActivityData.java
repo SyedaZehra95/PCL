@@ -207,6 +207,7 @@ public class ActivityData {
 
 			for (String keyName : testPackageToResourcesMap.keySet()) {
 				Activity newActivity = new Activity(keyName);
+				newActivity.setId(activities.size());
 				double manHours = testPackageToResourcesMap.get(keyName);
 				if (ActivityData.getMaxManHours() < manHours) {
 					ActivityData.setMaxManHours(manHours);

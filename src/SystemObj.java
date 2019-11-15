@@ -27,12 +27,13 @@ public class SystemObj {
 		this.activities.add(act);
 	}
 
-	public SystemObj(String id, double res, LocalDate act, LocalDate deact, LocalDate TMax) {
+	public SystemObj(String id, double res, LocalDate act, LocalDate deact, LocalDate TMax,ArrayList activities) {
 		this.id = id;
 		this.manhours = res;
 		this.activationDate = act;
 		this.deactivationDate = deact;
 		this.TMax = TMax;
+		this.activities=activities;
 	}
 
 //	public SystemObj(String id2, double resources2) {
@@ -70,7 +71,7 @@ public class SystemObj {
 	}
 
 	public SystemObj clone() {
-		return new SystemObj(this.id, this.manhours, DateHelper.MAX_VALUE, DateHelper.MIN_VALUE, this.TMax);
+		return new SystemObj(this.id, this.manhours, DateHelper.MAX_VALUE, DateHelper.MIN_VALUE, this.TMax,this.activities);
 
 	}
 
@@ -80,5 +81,9 @@ public class SystemObj {
 
 	public void setTMax(LocalDate tMax) {
 		TMax = tMax;
+	}
+	
+	public ArrayList getActivities() {
+		return this.activities;
 	}
 }

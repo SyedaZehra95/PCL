@@ -29,6 +29,8 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
@@ -103,8 +105,11 @@ public class IndividualGanttChart {
 	public GanttChart start(Individual individual, VBox main_vbox) {
 
 		// Create the Gantt chart
-		gantt = new GanttChart<WorkPackages>(new WorkPackages("Packages", " "));
-
+		
+		gantt = new GanttChart<WorkPackages>();
+		WorkPackages packages=new WorkPackages("Packages", " ");
+		gantt.setRoot(packages);
+		packages.setExpanded(true);
 		Layer layer = new Layer("Packs");
 		gantt.getLayers().add(layer);
 		this.ind = individual;
@@ -135,9 +140,10 @@ public class IndividualGanttChart {
 			WorkPackages ac = new WorkPackages(packageName, this.df.format(res));
 
 			// "Resource="+(individual.getGene(i).getNumberOfResources()*ActivityData.workingHoursPerDay())
-			ac.addActivity(layer, new Pack(new PackageData("Tmin" + startDate, startDate, startDate)));
-			ac.addActivity(layer, new Pack(new PackageData(packageName + "/" + i, activeDate, deactiveDate)));
-			ac.addActivity(layer, new Pack(new PackageData("Tmax" + endDate, endDate, endDate)));
+			System.out.println(packageName+": "+startDate+" : "+endDate+" : "+activeDate+" : "+deactiveDate);
+			ac.addActivity(layer, new Pack(new PackageData("Tmin" + startDate, startDate.plusDays(1), startDate.plusDays(1))));
+			ac.addActivity(layer, new Pack(new PackageData(packageName + "/" + i, activeDate.plusDays(1), deactiveDate.plusDays(1))));
+			ac.addActivity(layer, new Pack(new PackageData("Tmax" + endDate, endDate.plusDays(1), endDate.plusDays(1))));
 			layer.setVisible(true);
 
 			gantt.getRoot().getChildren().add(ac);
@@ -168,7 +174,11 @@ public class IndividualGanttChart {
 			ScrollPane root = new ScrollPane();
 
 			Stage stage = new Stage();
-
+			SystemGantt sindg = new SystemGantt();
+			TabPane tabpane=new TabPane();
+			Tab testTab=new Tab("Test Package");
+			Tab systemTab=new Tab("System");
+			
 			Label title = new Label("Max manhours: " + individual.getHighestManhours() + " | End week: "
 					+ individual.getProjectEndWeek() + " | Duration: "
 					+ (individual.getFitness()[0] - individual.getStartWeek()) + " weeks | Penalty: "
@@ -183,7 +193,10 @@ public class IndividualGanttChart {
 			box.getChildren().add(sp);
 			box.setMinWidth(screen.getVisualBounds().getWidth());
 			box.setMinHeight(screen.getVisualBounds().getHeight());
-			root.setContent(box);
+			testTab.setContent(box);
+			systemTab.setContent(sindg.startGanttChart(individual, main_vbox));
+			tabpane.getTabs().addAll(testTab,systemTab); 
+			root.setContent(tabpane);
 			// main_vbox.getChildren().add(gantt);
 			stage.setScene(scene);
 			stage.sizeToScene();

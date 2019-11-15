@@ -164,6 +164,10 @@ public class Activity {
 	public int id() {
 		return this.id;
 	}
+	
+	public void setId(int id) {
+		this.id=id;
+	}
 
 	public LocalDate getStartDate() {
 		if (startDate == null) {
